@@ -3,19 +3,20 @@ import { getBooks } from '../api/books';
 import Grid from '@mui/joy/Grid';
 import AspectRatio from '@mui/joy/AspectRatio';
 import Card from '@mui/joy/Card';
-import Button from '@mui/joy/Button';
+// import Button from '@mui/joy/Button';
 import CardContent from '@mui/joy/CardContent';
 import CardActions from '@mui/joy/CardActions';
 import Typography from '@mui/joy/Typography';
+import Button from '@mui/material/Button';
+
+
 
 function Home() {
     const [books, setBooks] = useState([]);
 
     useEffect(() => {
-        console.log('home page');
         getBooks().then((response) => {
-            console.log(response.data);
-            setBooks(response.data);
+          setBooks(response.data);
         })
     }, []);
 
@@ -36,15 +37,15 @@ function Home() {
                   src="https://images.unsplash.com/photo-1502657877623-f66bf489d236?auto=format&fit=crop&w=800"
                   srcSet="https://images.unsplash.com/photo-1502657877623-f66bf489d236?auto=format&fit=crop&w=800&dpr=2 2x"
                   alt="A beautiful landscape."
-                /> 
+                />  
               )}
               </AspectRatio>
               <Typography level="title-lg">{item.price} $</Typography>
               <Typography level="title-lg">{item.title}</Typography>
               <Typography level="body-md">{item.description}</Typography>
-            </CardContent>
-            <CardActions>
-            <Button variant="solid">Purchase Now</Button>
+            </CardContent> 
+            <CardActions> 
+            <Button variant="contained">Purchase Now</Button>
             </CardActions>
           </Card>
         )}

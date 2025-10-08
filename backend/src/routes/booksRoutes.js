@@ -11,7 +11,7 @@ booksRouter.get('/', async(req, res) => {
 booksRouter.get('/:id', async (req, res) => {
     const { id } = req.params;
     const book = await retriveBook(id);
-    res.send(book);
+    res.send(book[0]);
 })
 
 booksRouter.delete('/:id', async(req,res) => {

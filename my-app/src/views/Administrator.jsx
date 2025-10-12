@@ -25,10 +25,14 @@ function Administrator() {
     } 
 
     const handleEdit = (id) => {
-        navigate('/formular', {state:{bookId: id}});
+        navigate(`/formular/${id}`,  { state: { disabled: false } });
         console.log('id home',id)
     }
 
+    const handleState = (id) => {  
+        navigate(`/formular/${id}`, { state: { disabled: true } });  
+        console.log('id administartor view mode', id);
+    };
     const columns = [
         { field: 'isbn', headerName: 'ISBN', width: 130 },
         { field: 'title', headerName: 'Title', width: 150 },
@@ -39,7 +43,6 @@ function Administrator() {
             width: 150,
             sortable: false,
             renderCell: (params) => {
-                console.log('Params: ', params)
                 return (
                 <img
                     src={params.value ? params.value: 'https://www.blurb.com/blog/wp-content/uploads/2020/07/20200717_BookCoversExplained_Inline_Images_v1_01-1-1024x600.jpg'}     
@@ -87,6 +90,11 @@ function Administrator() {
                 pageSizeOptions={[15, 30]}
                 checkboxSelection
                 sx={{ border: 0 }}
+                onCellClick={(params) => {
+                    if (params.field !== 'actions') {
+                        handleState(params.row.id);
+                    }
+                }}
             />
             </Paper>
         </>

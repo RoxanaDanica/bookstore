@@ -18,7 +18,9 @@ body { background: #ffffff; }
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
-
+button:focus,
+button:focus-visible {  outline: unset; outline-offset: unset; }
+button:hover { outline: unset; border-color: white; background: white; }
 @keyframes logo-spin {
   from {
     transform: rotate(0deg);

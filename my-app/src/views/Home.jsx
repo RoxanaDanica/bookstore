@@ -11,67 +11,160 @@ import Button from '@mui/material/Button';
 import Box from '@mui/joy/Box';
 import Checkbox from '@mui/joy/Checkbox';
 import Slider from '@mui/material/Slider';
-import Input from '@mui/joy/Input';
 import Accordion from '@mui/joy/Accordion';
 import AccordionDetails from '@mui/joy/AccordionDetails';
 import AccordionSummary from '@mui/joy/AccordionSummary';
-
+import FormControlLabel from '@mui/material/FormControlLabel';
+import IconButton from '@mui/material/IconButton';
+import DeleteIcon from '@mui/icons-material/Delete';
+import TextField from '@mui/material/TextField';
 
 function Home() {
-    const [books, setBooks] = useState([]);
-
-    useEffect(() => {
-        getBooks().then((response) => {
-          setBooks(response.data);
-        })
-    }, []);
-  
+  const [books, setBooks] = useState([]);
   const [value, setValue] = useState([0, 100]);
+  const [filters, setFilters] = useState({
+    searchTerm: '',
+    authors: [],
+    genres: [],
+    price: {min:0, max: 100}
+  });
+  const uniqueAuthors = [...new Set(books.map(book => book.author))];
+  const uniqueGenres = [...new Set(books.map(b => b.genre))];
+  const [searchInputValue, setSearchInputValue] = useState('');
+
+  useEffect(() => {
+    getBooks().then((response) => {
+      setBooks(response.data);
+    })
+  }, []);
+
   function valuetext(value) {
-    return `${value}°C`;
+    return `${value}$`;
   }
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
 
+  const handleGenreChange = (genre) => {
+    setFilters(prev => {
+      const alreadySelected = prev.genres.includes(genre);
+      return {
+        ...prev,
+        genres: alreadySelected ? prev.genres.filter(g => g !== genre) : [...prev.genres, genre],  
+      };
+    });
+  };
+  function handleAuthorChange(author) {
+    setFilters(prev => {
+      const alreadySelected = prev.authors.includes(author);
+      return{
+        ...prev,
+        authors: alreadySelected ? prev.authors.filter(a => a !== author) : [...prev.authors, author]
+      }
+    })
+  }
+  function isFiltersEmpty() {
+    return (
+      filters.searchTerm === '' &&
+      filters.authors.length === 0 &&
+      filters.genres.length === 0 &&
+      filters.price.min === 0 &&
+      filters.price.max === 100
+    );
+  };
 
-    return ( 
-    <Box sx= {{display: 'grid', gridTemplateColumns: '300px 1fr' }}> 
+  
+  function handleChangeInnput(textValue) {
+    let term = textValue[0].toUpperCase() + textValue.slice(1);
+    setSearchInputValue(textValue);
+    console.log('searchInputValue', searchInputValue);
+    if(textValue.length > 3) {
+      setTimeout(() => {
+        setFilters((prev) => ({
+          ...prev,
+          searchTerm: term
+        }))
+      }, 3000)
+    }
+  }
+  function resetFilters() {
+    setSearchInputValue('');
+    setFilters({
+      searchTerm: '',
+      authors: [],
+      genres: [],
+      price: {min:0, max: 100}
+    })
+    
+  }
+  function clearSearch() {
+    setSearchInputValue('');
+    setFilters(prev => ({
+      ...prev,
+      searchTerm: ''
+    }))
+  }
+  const filteredBooks = books.filter(book => {
+    const matchesAuthor = filters.authors.length === 0 || filters.authors.includes(book.author);
+    const matchesGenre = filters.genres.length === 0 || filters.genres.includes(book.genre);
+    const matchesPrice = book.price >= value[0] && book.price <= value[1];
+    const matchesSearch = filters.searchTerm === '' ||  book.title.includes(filters.searchTerm);
+    return matchesAuthor && matchesGenre && matchesPrice && matchesSearch;
+  });
+
+  return ( 
+    <Box sx= {{display: 'grid', gridTemplateColumns: '300px 1fr', width: '1300px' }}> 
       <Box>
-        <Box sx={{ display: 'flex', flexDirection: 'column', width: 'fit-content', gap: 1, textAlign: "start" }}>
+        {!isFiltersEmpty() ? (    <Button variant="outlined" onClick={resetFilters}>  Reset All Filters </Button>) : ('')}
+        <Box sx={{ display: 'flex', width: '100%', flexDirection: 'column', gap: 1, textAlign: "start" }}>
           <h3>Search for a Book</h3>
-          <Input color="neutral" placeholder="Search for book" variant="outlined" />
+          <Box sx={{display: "flex", flexDirection: "row", justifyContent: 'space-between'}}>
+            <TextField size="small" defaultValue={searchInputValue} value={searchInputValue} onChange={(e) => {handleChangeInnput(e.target.value)}} color="neutral" placeholder="Search for book" variant="outlined"  onKeyDown={(e) => { 
+            if(e.key === "Enter"){
+              setFilters(prev => ({...prev, searchTerm:  e.target.value[0]?.toUpperCase() + e.target.value.slice(1)}))
+              console.log('tagret value', e.target.value);
+            }}} />
+            {filters.searchTerm != '' ? (<><IconButton sx={{marginRight:'10px'}} onClick={() => {clearSearch()}}> <DeleteIcon /></IconButton></>): ''}
+          </Box>
         </Box>
-        <Accordion defaultExpanded sx={{padding: '0 15px 0 0', margin: '20px 0 0 0'}}>
+        <Accordion defaultExpanded sx={{padding: '0 15px 0 0', margin: '20px 0 0 0'}} >
           <AccordionSummary disableGutters={true} sx={{outline: 'unset', fontSize: '18.8px', fontWeight: '700', outlineWidth: '0', focus}}>Author</AccordionSummary>
-          <AccordionDetails>{books.map(book => 
-            <Checkbox sx={{display: 'flex', gap: 1, mt: 1, textAlign: 'start'}} label={book.author} variant="outlined" />
-          )}
+          <AccordionDetails>
+            {uniqueAuthors.map(author => (
+              <FormControlLabel sx={{marginLeft: '0', display: 'flex', gap: 1}}
+              key={author}
+              control={ <Checkbox checked={filters.authors.includes(author)} onChange={() => handleAuthorChange(author)} />}
+              label={author} />
+            ))}
           </AccordionDetails>
-      </Accordion>
-         <Accordion sx={{padding: '0 15px 0 0', margin: '20px 0 0 0'}}>
+        </Accordion>
+        <Accordion sx={{padding: '0 15px 0 0', margin: '20px 0 0 0'}}>
           <AccordionSummary disableGutters={true} sx={{outline: 'unset', fontSize: '18.8px', fontWeight: '700', outlineWidth: '0', focus}}>Genre</AccordionSummary>
-          <AccordionDetails>{books.map(book => 
-           <Checkbox sx={{display: 'flex', gap: 1, mt: 1, textAlign: 'start'}} label={book.genre} variant="outlined" />
-        )}
+          <AccordionDetails>
+            {uniqueGenres.map(genre => (
+              <FormControlLabel  sx={{marginLeft: '0', display: 'flex', gap: 1}}
+              key={genre}
+              control={ <Checkbox checked={filters.genres.includes(genre)} onChange={() => handleGenreChange(genre)} />}
+              label={genre} />
+            ))}
           </AccordionDetails>
-      </Accordion>
-      <Box sx={{ display: 'flex', flexDirection: 'column', width: '200px', gap: 1, textAlign: "start"  }}>
-        <h3>Price</h3>
-        <Slider
-          getAriaLabel={() => 'Temperature range'}
-          value={value}
-          onChange={handleChange}
-          valueLabelDisplay="auto"
-          getAriaValueText={valuetext}
-        />
+        </Accordion>
+        <Box sx={{ display: 'flex', flexDirection: 'column', width: '200px', gap: 1, textAlign: "start"  }}>
+          <h3>Price</h3>
+          <Slider
+            getAriaLabel={() => 'Price'}
+            value={value}
+            onChange={handleChange}
+            valueLabelDisplay="auto"
+            getAriaValueText={valuetext}
+          />
+        </Box>
       </Box>
-      </Box>
-      {books && (
+      {filteredBooks.length > 0 ? (
         <div>
-          <h2>Doing stuff with data</h2> 
+          <h2>Books</h2> 
           <Grid  sx={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 2 }}>
-            {books.map(item => 
+            {filteredBooks.map(item => 
             <Card key={item.id}  orientation="vertical" size="md" variant="outlined">
               <CardContent>
                 <AspectRatio objectFit="contain">
@@ -96,7 +189,11 @@ function Home() {
           )}
           </Grid>       
         </div>
-      )}
+      ) : (
+      <Grid sx={{ paddingLeft: '30px', textAlign: 'start' }}>
+        <Typography level="body-lg" sx={{ mt: 2, fontSize:'28px',color: '#000000', fontWeight: '600' }}> Not found </Typography>
+      </Grid>
+    )}
     </Box>
   )
 };

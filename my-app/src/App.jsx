@@ -23,7 +23,6 @@ function App() {
     children: [
       { index: true, Component: Formular },
       {
-        // again, no path, just a component for the layout
         Component: Formular,
         children: [
           { path: ":bookId", Component: Formular },

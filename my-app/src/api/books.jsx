@@ -21,9 +21,14 @@ const updateBook = async (id, book) => {
   return data;
 
 }
+const addBook = async (book) => {
+  const data = await getAxiosInstance().post('/books', book);
+  return data;
+}
 export { 
   getBooks, 
   getBook,
   deleteBook,
   updateBook,
+  addBook
 };

@@ -6,6 +6,8 @@ import { useState } from "react";
 import { useEffect } from "react";
 import { deleteBook, getBooks } from "../api/books";
 import { useNavigate } from "react-router";
+import Button from "@mui/material/Button";
+import Box from "@mui/material/Box";
 
 function Administrator() {
     const [books, setBooks] = useState([]);
@@ -33,6 +35,9 @@ function Administrator() {
         navigate(`/formular/${id}`, { state: { disabled: true } });  
         console.log('id administartor view mode', id);
     };
+    const handleAddBook = () => {
+        navigate('/formular', { state: { disabled: false } });
+    }
     const columns = [
         { field: 'isbn', headerName: 'ISBN', width: 130 },
         { field: 'title', headerName: 'Title', width: 150 },
@@ -81,7 +86,11 @@ function Administrator() {
     const paginationModel = { page: 0, pageSize: 15 };
     return(
         <>
-
+            <h3></h3>
+           <Box sx={{display:"flex", gap: 2, paddingBottom:"30px", width: "100%", justifyContent:"space-between"}}>
+                <h3 style={{margin: "unset"}}>Add new book</h3>
+                <Button onClick={handleAddBook} size="small" variant="outlined">Add</Button>
+           </Box>
             <Paper sx={{ height: 850, width: '100%' }}>
             <DataGrid
                 rows={rows}

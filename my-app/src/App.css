@@ -1,10 +1,11 @@
 #root {
-  max-width: 1280px;
+  max-width: 1380px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  background: #ffffff;
 }
-
+body { background: #ffffff; }
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -17,7 +18,9 @@
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
-
+button:focus,
+button:focus-visible {  outline: unset; outline-offset: unset; }
+button:hover { outline: unset; border-color: white; background: white; }
 @keyframes logo-spin {
   from {
     transform: rotate(0deg);
@@ -40,3 +43,5 @@
 .read-the-docs {
   color: #888;
 }
+
+h1, h2, h3, h4, h5 { color: #000000; }

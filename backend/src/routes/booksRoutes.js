@@ -1,6 +1,6 @@
 import express from 'express';
 import { retriveBooks, retriveBook, deleteBook, addBook, editBook } from '../services/booksService.js';
-import { createBookValidator } from '../validators/bookValidators.js';
+import { validateBookPayload } from '../validators/bookValidators.js';
 
 const booksRouter = express.Router();
 
@@ -24,7 +24,7 @@ booksRouter.delete('/:id', async(req,res) => {
 booksRouter.post('/', async(req, res) => {
     const book = req.body;
     try {
-        createBookValidator(book);
+        validateBookPayload(book);
         const newBook = await addBook(book);
         res.send(200);
     } catch (error) {
@@ -36,7 +36,7 @@ booksRouter.put('/:id', async(req, res)=> {
     const id = req.params.id;
     const modifyBook = {...req.body};
     try {
-        createBookValidator(modifyBook);
+        validateBookPayload(modifyBook);
         const book = await editBook(id, modifyBook);
         res.send(200);
     } catch (error) {

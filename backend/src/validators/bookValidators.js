@@ -2,12 +2,10 @@ class BookValidationException extends Error {
 
 }
 
+export const validateBookPayload = (book) => {
+    const currentYear = new Date().getFullYear();
 
-export const createBookValidator = (book) => {
-    const currentYear = new Date();
-    currentYear.getFullYear();
-
-    if(book.publicationYear > currentYear.getFullYear()) {
+    if(book.publicationYear > currentYear) {
         console.log('publication year');
         throw new BookValidationException('Publication Year must be less or equal then current date');
     }
@@ -21,9 +19,11 @@ export const createBookValidator = (book) => {
     }
     const mandatoryFields = ['title', 'author', 'genre', 'publisher', 'language', 'pages', 'description', 'availableCopies', 'price'];
     for(const field of mandatoryFields) {
+        if (typeof book[field] === 'string' && book[field].trim() === '') {
+            throw new BookValidationException(`${field} is required`);
+        }
         if(!book[field]) {
             throw new BookValidationException(`${field} is required`);
         }
     }
-   
 }

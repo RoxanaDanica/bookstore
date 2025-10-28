@@ -6,8 +6,14 @@ import { useState } from "react";
 import { useEffect } from "react";
 import { deleteBook, getBooks } from "../api/books";
 import { useNavigate } from "react-router";
-import Button from "@mui/material/Button";
+import { addDocument } from "../api/uploadFile"; 
+
+// import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
+import Button from '@mui/joy/Button';
+import SvgIcon from '@mui/joy/SvgIcon';
+import { styled } from '@mui/joy';
+
 
 function Administrator() {
     const [books, setBooks] = useState([]);
@@ -37,6 +43,15 @@ function Administrator() {
     };
     const handleAddBook = () => {
         navigate('/formular', { state: { disabled: false } });
+    }
+    const uploadFileRouter = (event) => {
+        const file = event.target.files[0];
+
+        console.log('document out', file);
+        if(document) {
+            console.log('document', document);
+            addDocument(file);
+        }
     }
     const columns = [
         { field: 'isbn', headerName: 'ISBN', width: 130 },
@@ -84,12 +99,40 @@ function Administrator() {
 
     }));
     const paginationModel = { page: 0, pageSize: 15 };
+    const VisuallyHiddenInput = styled('input')`
+        clip: rect(0 0 0 0);
+        clip-path: inset(50%);
+        height: 1px;
+        overflow: hidden;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        white-space: nowrap;
+        width: 1px;
+    `;
     return(
         <>
             <h3></h3>
            <Box sx={{display:"flex", gap: 2, paddingBottom:"30px", width: "100%", justifyContent:"space-between"}}>
                 <h3 style={{margin: "unset"}}>Add new book</h3>
                 <Button onClick={handleAddBook} size="small" variant="outlined">Add</Button>
+           </Box>
+            <Box sx={{display:"flex", gap: 2, paddingBottom:"30px", width: "100%", justifyContent:"space-between"}}>
+                <h3 style={{margin: "unset"}}>Add an Excel with books</h3>
+                <Button
+                    component="label"
+                    // enctype="multipart/form-data"
+                    role={undefined}
+                    tabIndex={-1}
+                    variant="outlined"
+                    color="neutral"
+                    startDecorator={
+                    <SvgIcon>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" >
+                            <path strokeLinecap="round" strokeLinejoin="round"  d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
+                        </svg> 
+                    </SvgIcon> }  >Upload a file <VisuallyHiddenInput type="file" accept=".xlsx" onChange={uploadFileRouter} />
+                </Button>
            </Box>
             <Paper sx={{ height: 850, width: '100%' }}>
             <DataGrid

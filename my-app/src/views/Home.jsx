@@ -18,10 +18,17 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import TextField from '@mui/material/TextField';
+import Chat from './Chat';
+import { useCart } from "react-use-cart";
+import { Link } from "react-router-dom";
+
+
 
 function Home() {
+  
   const [books, setBooks] = useState([]);
   const [value, setValue] = useState([0, 100]);
+  const [addedMessage, setAddedMessage] = useState("");
   const [filters, setFilters] = useState({
     searchTerm: '',
     authors: [],
@@ -31,6 +38,7 @@ function Home() {
   const uniqueAuthors = [...new Set(books.map(book => book.author))];
   const uniqueGenres = [...new Set(books.map(b => b.genre))];
   const [searchInputValue, setSearchInputValue] = useState('');
+  const { addItem } = useCart();
 
   useEffect(() => {
     getBooks().then((response) => {
@@ -114,6 +122,7 @@ function Home() {
 
   return ( 
     <Box sx= {{display: 'grid', gridTemplateColumns: '300px 1fr', width: '1300px' }}> 
+    <Link to="/cart">View Cart</Link>
       <Box>
         {!isFiltersEmpty() ? (    <Button variant="outlined" onClick={resetFilters}>  Reset All Filters </Button>) : ('')}
         <Box sx={{ display: 'flex', width: '100%', flexDirection: 'column', gap: 1, textAlign: "start" }}>
@@ -122,7 +131,7 @@ function Home() {
             <TextField size="small" defaultValue={searchInputValue} value={searchInputValue} onChange={(e) => {handleChangeInnput(e.target.value)}} color="neutral" placeholder="Search for book" variant="outlined"  onKeyDown={(e) => { 
             if(e.key === "Enter"){
               setFilters(prev => ({...prev, searchTerm:  e.target.value[0]?.toUpperCase() + e.target.value.slice(1)}))
-              console.log('tagret value', e.target.value);
+              console.log('target value', e.target.value);
             }}} />
             {filters.searchTerm != '' ? (<><IconButton sx={{marginRight:'10px'}} onClick={() => {clearSearch()}}> <DeleteIcon /></IconButton></>): ''}
           </Box>
@@ -183,7 +192,20 @@ function Home() {
                 <Typography level="body-md">{item.description}</Typography>
               </CardContent> 
               <CardActions> 
-              <Button variant="contained">Purchase Now</Button>
+              <Button
+                  variant="contained"
+                  onClick={() => {
+                    addItem(item);
+
+                    setAddedMessage(`"${item.title}" has been added to the cart!`);
+
+                    setTimeout(() => {
+                      setAddedMessage("");
+                    }, 1500);
+                  }}
+                >
+                  Add to Cart
+              </Button>
               </CardActions>
             </Card>
           )}
@@ -194,6 +216,25 @@ function Home() {
         <Typography level="body-lg" sx={{ mt: 2, fontSize:'28px',color: '#000000', fontWeight: '600' }}> Not found </Typography>
       </Grid>
     )}
+    <Chat />
+    {addedMessage && (
+  <div
+    style={{
+      position: "fixed",
+      bottom: "20px",
+      right: "20px",
+      background: "#1f8f3a",
+      color: "white",
+      padding: "12px 16px",
+      borderRadius: "10px",
+      fontSize: "14px",
+      boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+      zIndex: 9999,
+    }}
+  >
+    {addedMessage}
+  </div>
+)}
     </Box>
   )
 };

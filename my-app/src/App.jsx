@@ -1,11 +1,13 @@
-import { BrowserRouter, createBrowserRouter, RouterProvider } from "react-router";
-import './App.css'
-import Home from './views/Home'
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+
+import Home from "./views/Home";
 import Administrator from "./views/Administrator.jsx";
 import Formular from "./views/Formular.jsx";
+import Cart from "./components/Cart.jsx";
 
-function App() {
-  let router = createBrowserRouter([
+import { CartProvider } from "react-use-cart";
+
+const router = createBrowserRouter([
   {
     path: "/",
     element: <Home />,
@@ -19,26 +21,17 @@ function App() {
     element: <Formular />,
   },
   {
-    path: "/formular",
-    children: [
-      { index: true, Component: Formular },
-      {
-        Component: Formular,
-        children: [
-          { path: ":bookId", Component: Formular },
-          { path: ":bookId/edit", Component: Formular },
-        ],
-      },
-    ],
+    path: "/cart",        
+    element: <Cart />,      
   },
-]); 
+]);
+
+function App() {
   return (
-    <>
-      <RouterProvider router={router}>
-        <Home />
-      </RouterProvider>
-    </>
-  )
+    <CartProvider>
+      <RouterProvider router={router} />
+    </CartProvider>
+  );
 }
 
-export default App
+export default App;

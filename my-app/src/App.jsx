@@ -4,6 +4,7 @@ import Home from "./views/Home";
 import Administrator from "./views/Administrator.jsx";
 import Formular from "./views/Formular.jsx";
 import Cart from "./components/Cart.jsx";
+import Checkout from "./views/Checkout.jsx";
 
 import { CartProvider } from "react-use-cart";
 
@@ -23,6 +24,10 @@ const router = createBrowserRouter([
   {
     path: "/cart",        
     element: <Cart />,      
+  },
+  {
+    path: "/checkout", 
+    element: <Checkout />,
   },
 ]);
 

@@ -1,4 +1,5 @@
 import { useCart } from "react-use-cart";
+import { useNavigate } from "react-router-dom";
 
 export default function Cart() {
   const {
@@ -12,19 +13,33 @@ export default function Cart() {
     emptyCart,
   } = useCart();
 
+  const navigate = useNavigate();
+
   if (isEmpty) return <h2>Cart is empty</h2>;
 
   return (
     <div>
       <h2>Cart</h2>
+
       <p>Unique items: {totalUniqueItems}</p>
       <p>Total items: {totalItems}</p>
       <p>Total: {cartTotal} $</p>
 
-      <button onClick={emptyCart}>Empty Cart</button>
+      <button onClick={emptyCart}>
+        Empty Cart
+      </button>
+
+      <button
+        onClick={() => navigate("/checkout")}
+        style={{ marginLeft: "10px", background: "green", color: "white" }}
+      >
+        Go to Checkout
+      </button>
+
+      <hr />
 
       {items.map((item) => (
-        <div key={item.id}>
+        <div key={item.id} style={{ marginBottom: "15px" }}>
           <h4>{item.title}</h4>
           <p>{item.price} $</p>
 
@@ -40,7 +55,9 @@ export default function Cart() {
             -
           </button>
 
-          <span>{item.quantity}</span>
+          <span style={{ margin: "0 10px" }}>
+            {item.quantity}
+          </span>
 
           <button
             onClick={() =>

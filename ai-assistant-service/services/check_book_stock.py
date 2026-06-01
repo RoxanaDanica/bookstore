@@ -5,28 +5,46 @@ from services.config import BACKEND_URL
 
 @tool
 def check_stock(title: str) -> str:
-    'Check if a book is in stock'
+    """Check if a book is in stock by title."""
 
-    response = requests.get(f"{BACKEND_URL}/books")
-    if response.status_code != 200:
-        return "Error accessing database."
-    data = response.json()
+    try:
+        response = requests.get(
+            f"{BACKEND_URL}/books",
+            timeout=5
+        )
 
-    if not isinstance(data, list):
-        return "Invalid backend response"
+        response.raise_for_status()
 
-    book = next(
-        (b for b in data if b["title"].lower() == title.lower()),
-        None
-    )
+        data = response.json()
 
-    if not book:
-        return f"'{title}' is not in stock."
+        if not isinstance(data, list):
+            return "Invalid backend response format."
 
-    stock = book.get("stock", 0)
+        title_lower = title.lower()
 
-    if stock > 0:
-        return f"'{title}' is in stock ({stock} available)."
-    else:
-        return f"'{title}' is out of stock."
+        book = next(
+            (
+                b for b in data
+                if title_lower in b.get("title", "").lower()
+            ),
+            None
+        )
 
+        if not book:
+            return f"No book found matching '{title}'."
+
+        stock = book.get("stock")
+
+        if stock is None:
+            return f"Stock information is not available for '{book.get('title')}'."
+
+        if stock > 0:
+            return f"'{book.get('title')}' is in stock ({stock} available)."
+        else:
+            return f"'{book.get('title')}' is currently out of stock."
+
+    except requests.Timeout:
+        return "Database request timed out."
+
+    except requests.RequestException as e:
+        return f"Error accessing database: {str(e)}"

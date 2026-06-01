@@ -8,7 +8,9 @@
   function BookForm() {
     let params = useParams();
     const bookId = params.bookId;
-    console.log('bookId',bookId);
+    const [isDisabled, setIsDesabled] = useState(false); 
+    const location = useLocation();
+    const { disabled } = location.state;
     const { register, setValue, handleSubmit, control, formState, formState: { errors }} = useForm({
       title: '',
       author: '',
@@ -24,15 +26,12 @@
       price: ''
     });
     
-    const [isDisabled, setIsDesabled] = useState(false); 
-    const location = useLocation();
-    const { disabled } = location.state;
+
 
     useEffect(() => {
       if (disabled != null) {
         setIsDesabled(disabled);
       }
-
 
       if (!bookId) return;
 
@@ -63,7 +62,6 @@
         { !disabled ? "Edit Form" : "Form Book"} 
       </h3>
       <form  onSubmit={handleSubmit(onSubmit)}>
-        {/* <input type="number" placeholder="id" {...register("id", {required: true})} /> */}
           <Box sx={{ width: '900px', display: 'flex', gap: 2, mb: 2, }}>
               <Controller
                 name="title" 
@@ -113,8 +111,8 @@
                   message: 'The book must have a publication year'
                 },
                 max: {
-                  value: 2025,
-                  message: 'Year must not be greated than 2025'
+                  value: 2026,
+                  message: 'Year must not be greated than 2026'
                 },
               }}
               control={control}

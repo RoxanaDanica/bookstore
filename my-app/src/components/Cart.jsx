@@ -31,7 +31,7 @@ export default function Cart() {
 
       <button
         onClick={() => navigate("/checkout")}
-        style={{ marginLeft: "10px", background: "green", color: "white" }}
+        className={{ marginLeft: "10px", background: "green", color: "white" }}
       >
         Go to Checkout
       </button>
@@ -39,7 +39,7 @@ export default function Cart() {
       <hr />
 
       {items.map((item) => (
-        <div key={item.id} style={{ marginBottom: "15px" }}>
+        <div key={item.id} className={{ marginBottom: "15px" }}>
           <h4>{item.title}</h4>
           <p>{item.price} $</p>
 
@@ -55,7 +55,7 @@ export default function Cart() {
             -
           </button>
 
-          <span style={{ margin: "0 10px" }}>
+          <span className={{ margin: "0 10px" }}>
             {item.quantity}
           </span>
 

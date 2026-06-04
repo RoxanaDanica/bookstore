@@ -1,33 +1,35 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 import Home from "./views/Home";
-import Administrator from "./views/Administrator.jsx";
-import Formular from "./views/Formular.jsx";
-import Cart from "./components/Cart.jsx";
-import Checkout from "./views/Checkout.jsx";
-
+import Administrator from "./views/Administrator";
+import Cart from "./components/Cart";
+import Checkout from "./views/Checkout";
 import { CartProvider } from "react-use-cart";
+
+import MainLayout from "./components/Layout";
+import './index.css'
 
 const router = createBrowserRouter([
   {
-    path: "/",
-    element: <Home />,
-  },
-  {
-    path: "/administrator",
-    element: <Administrator />,
-  },
-  {
-    path: "/formular",
-    element: <Formular />,
-  },
-  {
-    path: "/cart",        
-    element: <Cart />,      
-  },
-  {
-    path: "/checkout", 
-    element: <Checkout />,
+    element: <MainLayout />,
+    children: [
+      {
+        path: "/",
+        element: <Home />,
+      },
+      {
+        path: "/administrator",
+        element: <Administrator />,
+      },
+      {
+        path: "/cart",
+        element: <Cart />,
+      },
+      {
+        path: "/checkout",
+        element: <Checkout />,
+      },
+    ],
   },
 ]);
 

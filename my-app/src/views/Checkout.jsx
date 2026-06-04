@@ -1,21 +1,51 @@
 import { useState } from "react";
 import { useCart } from "react-use-cart";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+// ---------------- VALIDATION ----------------
+const nameRegex = /^[\p{L}\s'-]+$/u;
+const textRegex = /^[\p{L}\s'-]+$/u;
+
+const schema = z.object({
+  fullName: z
+    .string()
+    .min(2, "Full name is required")
+    .max(60, "Name is too long")
+    .regex(nameRegex, "Only letters are allowed"),
+
+  street: z
+    .string()
+    .min(3, "Street is required")
+    .max(100, "Street is too long")
+    .regex(/^[\p{L}0-9\s.,'-]+$/u, "Invalid street format"),
+
+  city: z
+    .string()
+    .min(2, "City is required")
+    .max(60, "City is too long")
+    .regex(textRegex, "Only letters are allowed"),
+
+  county: z
+    .string()
+    .min(2, "County is required")
+    .max(60, "County is too long")
+    .regex(textRegex, "Only letters are allowed"),
+
+  country: z
+    .string()
+    .min(2, "Country is required")
+    .max(60, "Country is too long")
+    .regex(textRegex, "Only letters are allowed"),
+});
 
 export default function Checkout() {
   const { items, cartTotal, emptyCart } = useCart();
-  const [step, setStep] = useState(1);
-  const [form, setForm] = useState({
-    fullName: "",
-    street: "",
-    city: "",
-    county: "",
-    country: "",
-  });
 
-  const [errors, setErrors] = useState({});
+  const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [courier, setCourier] = useState("fan");
-
   const courierOptions = {
     fan: { name: "Fan Courier", price: 5 },
     dpd: { name: "DPD", price: 4 },
@@ -23,45 +53,22 @@ export default function Checkout() {
   };
 
   const shippingCost = courierOptions[courier].price;
-  const validateField = (name, value) => {
-    if (!value.trim()) return "This field is required";
 
-    if (name === "fullName" && /\d/.test(value)) {
-      return "Name cannot contain numbers";
-    }
-
-    if (["city", "county", "country"].includes(name) && /\d/.test(value)) {
-      return "This field cannot contain numbers";
-    }
-
-    return "";
-  };
-  
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-
-    setForm((prev) => ({ ...prev, [name]: value }));
-
-    setErrors((prev) => ({
-      ...prev,
-      [name]: validateField(name, value),
-    }));
-  };
+  // ---------------- FORM ----------------
+  const {
+    register,
+    formState: { errors },
+    trigger,
+    getValues,
+  } = useForm({
+    resolver: zodResolver(schema),
+    mode: "onChange",
+  });
 
   // ---------------- STEP 1 -> STEP 2 ----------------
-  const goToReview = () => {
-    const newErrors = {};
-
-    Object.keys(form).forEach((key) => {
-      const err = validateField(key, form[key]);
-      if (err) newErrors[key] = err;
-    });
-
-    setErrors(newErrors);
-
-    if (Object.keys(newErrors).length === 0) {
-      setStep(2);
-    }
+  const goToReview = async () => {
+    const valid = await trigger();
+    if (valid) setStep(2);
   };
 
   // ---------------- PLACE ORDER ----------------
@@ -69,48 +76,39 @@ export default function Checkout() {
     setLoading(true);
 
     setTimeout(() => {
-      console.log("ORDER CREATED:", {
-        customer: form,
-        items,
-        total: cartTotal + shippingCost,
-        courier: courierOptions[courier].name,
-      });
-
+      const form = getValues();
       emptyCart();
       setLoading(false);
       setStep(3);
     }, 1000);
   };
-
-  // ---------------- UI ----------------
   return (
-    <div style={{ maxWidth: "600px", margin: "auto" }}>
+    <div className="max-w-md mx-auto">
       <h2>Checkout</h2>
-      <div style={{ marginBottom: "20px" }}>
-        <b>Step {step} / 3</b>
-      </div>
+      <b>Step {step} / 3</b>
 
       {/* ---------------- STEP 1 ---------------- */}
       {step === 1 && (
         <>
           <h3>Shipping Details</h3>
 
-          {Object.keys(form).map((field) => (
-            <div key={field}>
-              <input
-                name={field}
-                placeholder={field}
-                value={form[field]}
-                onChange={handleChange}
-              />
-              {errors[field] && (
-                <p style={{ color: "red" }}>{errors[field]}</p>
-              )}
-            </div>
-          ))}
+          <input placeholder="Full Name" {...register("fullName")} />
+          <p className="text-red-500">{errors.fullName?.message}</p>
+
+          <input placeholder="Street" {...register("street")} />
+          <p className="text-red-500">{errors.street?.message}</p>
+
+          <input placeholder="City" {...register("city")} />
+          <p className="text-red-500">{errors.city?.message}</p>
+
+          <input placeholder="County" {...register("county")} />
+          <p className="text-red-500">{errors.county?.message}</p>
+
+          <input placeholder="Country" {...register("country")} />
+          <p className="text-red-500">{errors.country?.message}</p>
 
           <button onClick={goToReview}>
-            Continue to Review →
+            Continue →
           </button>
         </>
       )}
@@ -120,15 +118,10 @@ export default function Checkout() {
         <>
           <h3>Review Order</h3>
 
-          <p><b>Name:</b> {form.fullName}</p>
-          <p><b>Address:</b> {form.street}, {form.city}</p>
-
-          <hr />
-
           <h4>Choose Courier</h4>
 
           {Object.entries(courierOptions).map(([key, value]) => (
-            <label key={key} style={{ display: "block", margin: 8 }}>
+            <label key={key} className="block margin-8">
               <input
                 type="radio"
                 checked={courier === key}
@@ -140,7 +133,6 @@ export default function Checkout() {
 
           <hr />
 
-          <h4>Items</h4>
           {items.map((item) => (
             <p key={item.id}>
               {item.title} x {item.quantity}
@@ -154,19 +146,19 @@ export default function Checkout() {
 
           <h3>Total: {cartTotal + shippingCost} $</h3>
 
-          <button onClick={() => setStep(1)}>← Back</button>
+          <button onClick={() => setStep(1)}>Back</button>
 
           <button onClick={placeOrder} disabled={loading}>
-            {loading ? "Processing..." : "Place Order "}
+            {loading ? "Processing..." : "Place Order (Cash)"}
           </button>
         </>
       )}
 
       {/* ---------------- STEP 3 ---------------- */}
       {step === 3 && (
-        <div style={{ padding: 20, background: "#eaffea" }}>
+        <div className="p-5 bg-green-100">
           <h2>Order Confirmed!</h2>
-          <p>Your order is being prepared.</p>
+          <p>Your order is being prepared</p>
           <p>Courier will pick it up soon</p>
         </div>
       )}

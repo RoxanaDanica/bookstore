@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { getBooks } from '../api/books';
 import { useCart } from "react-use-cart";
 import { Link } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 
 import Grid from '@mui/joy/Grid';
 import AspectRatio from '@mui/joy/AspectRatio';
@@ -21,7 +22,9 @@ import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import TextField from '@mui/material/TextField';
 import Chat from './Chat';
-
+import StarRateIcon from '@mui/icons-material/StarRate';
+import StarBorderIcon from '@mui/icons-material/StarBorder';
+import StarHalfIcon from '@mui/icons-material/StarHalf';
 
 
 function Home() {
@@ -29,17 +32,18 @@ function Home() {
   const [books, setBooks] = useState([]);
   const [value, setValue] = useState([0, 100]);
   const [addedMessage, setAddedMessage] = useState("");
+  const [searchParams] = useSearchParams();
   const [filters, setFilters] = useState({
-    searchTerm: '',
     authors: [],
     genres: [],
     price: {min:0, max: 100}
   });
-  const [searchInputValue, setSearchInputValue] = useState('');
   const { addItem } = useCart();
 
   const uniqueAuthors = [...new Set(books.map(book => book.author))];
   const uniqueGenres = [...new Set(books.map(b => b.genre))];
+  const selectedGenre = searchParams.get("genre");
+  const searchTerm = searchParams.get("search") || "";
 
   useEffect(() => {
     getBooks().then((response) => {
@@ -83,74 +87,82 @@ function Home() {
   };
 
   
-  function handleChangeInnput(textValue) {
-    let term = textValue[0].toUpperCase() + textValue.slice(1);
-    setSearchInputValue(textValue);
-    console.log('searchInputValue', searchInputValue);
-    if(textValue.length > 3) {
-      setTimeout(() => {
-        setFilters((prev) => ({
-          ...prev,
-          searchTerm: term
-        }))
-      }, 3000)
-    }
-  }
   function resetFilters() {
-    setSearchInputValue('');
     setFilters({
       searchTerm: '',
       authors: [],
       genres: [],
       price: {min:0, max: 100}
     })
-    
   }
-  function clearSearch() {
-    setSearchInputValue('');
-    setFilters(prev => ({
-      ...prev,
-      searchTerm: ''
-    }))
+  function renderStars(rating) {
+    const stars = [];
+
+    for (let i = 1; i <= 5; i++) {
+      if (rating >= i) {
+        stars.push(<StarRateIcon key={i} sx={{ color: 'black' }} />);
+      } else if (rating >= i - 0.5) {
+        stars.push(<StarHalfIcon key={i} sx={{ color: 'black' }} />);
+      } else {
+        stars.push(<StarBorderIcon key={i} sx={{ color: 'black' }} />);
+      }
+    }
+
+    return stars;
   }
   const filteredBooks = books.filter(book => {
-    const matchesAuthor = filters.authors.length === 0 || filters.authors.includes(book.author);
-    const matchesGenre = filters.genres.length === 0 || filters.genres.includes(book.genre);
-    const matchesPrice = book.price >= value[0] && book.price <= value[1];
-    const matchesSearch = filters.searchTerm === '' ||  book.title.includes(filters.searchTerm);
-    return matchesAuthor && matchesGenre && matchesPrice && matchesSearch;
-  });
+  const matchesAuthor =
+    filters.authors.length === 0 ||
+    filters.authors.includes(book.author);
+
+  const matchesGenre =
+    filters.genres.length === 0 ||
+    filters.genres.includes(book.genre);
+
+  const matchesPrice =
+    book.price >= value[0] &&
+    book.price <= value[1];
+
+  const matchesSearch =
+    searchTerm === "" ||
+    book.title.toLowerCase().includes(searchTerm.toLowerCase());
+
+  const matchesHeaderGenre =
+    !selectedGenre || book.genre === selectedGenre;
+
+  return (
+    matchesAuthor &&
+    matchesGenre &&
+    matchesPrice &&
+    matchesSearch &&
+    matchesHeaderGenre
+  );
+});
 
   return ( 
-    <div>
-      <Link to="/cart">View Cart</Link>
-      <Box sx= {{display: 'grid', gridTemplateColumns: '300px 1fr', width: '1300px' }}> 
-        <Box>
+    <div className="flex flex-col items-center">
+      <Box sx= {{display: 'grid', gridTemplateColumns: '300px 1fr', width: '1400px' }}> 
+        <Box sx={{ paddingLeft: '15px', paddingRight: '15px' }}>
           {!isFiltersEmpty() ? (    <Button variant="outlined" onClick={resetFilters}>  Reset All Filters </Button>) : ('')}
-          <Box sx={{ display: 'flex', width: '100%', flexDirection: 'column', gap: 1, textAlign: "start" }}>
-            <h3>Search for a Book</h3>
-            <Box sx={{display: "flex", flexDirection: "row", justifyContent: 'space-between'}}>
-              <TextField size="small" defaultValue={searchInputValue} value={searchInputValue} onChange={(e) => {handleChangeInnput(e.target.value)}} color="neutral" placeholder="Search for book" variant="outlined"  onKeyDown={(e) => { 
-              if(e.key === "Enter"){
-                setFilters(prev => ({...prev, searchTerm:  e.target.value[0]?.toUpperCase() + e.target.value.slice(1)}))
-                console.log('target value', e.target.value);
-              }}} />
-              {filters.searchTerm != '' ? (<><IconButton sx={{marginRight:'10px'}} onClick={() => {clearSearch()}}> <DeleteIcon /></IconButton></>): ''}
-            </Box>
-          </Box>
-          <Accordion defaultExpanded sx={{padding: '0 15px 0 0', margin: '20px 0 0 0'}} >
-            <AccordionSummary disableGutters={true} sx={{outline: 'unset', fontSize: '18.8px', fontWeight: '700', outlineWidth: '0', focus}}>Author</AccordionSummary>
-            <AccordionDetails>
-              {uniqueAuthors.map(author => (
-                <FormControlLabel sx={{marginLeft: '0', display: 'flex', gap: 1}}
-                key={author}
-                control={ <Checkbox checked={filters.authors.includes(author)} onChange={() => handleAuthorChange(author)} />}
-                label={author} />
-              ))}
-            </AccordionDetails>
-          </Accordion>
-          <Accordion sx={{padding: '0 15px 0 0', margin: '20px 0 0 0'}}>
-            <AccordionSummary disableGutters={true} sx={{outline: 'unset', fontSize: '18.8px', fontWeight: '700', outlineWidth: '0', focus}}>Genre</AccordionSummary>
+          <Accordion defaultExpanded sx={{padding: '0 15px 0 0', margin: '20px 0 0 0', paddingBottom: "30px", borderBottom: '1px solid #e5e5e5', color: 'black'}} >
+            <AccordionSummary disableGutters={true}
+                sx={{
+                  outline: 'unset',
+                  outlineWidth: '0',
+                  fontSize: '18.8px',
+                  fontWeight: 500,
+                  fontFamily: '"Playfair Display", serif',
+                  color: 'black',
+
+                  '& button': {
+                    color: 'black',
+                  },
+
+                  '& *': {
+                    color: 'black',
+                  },
+                }}
+             >Shop by Genre</AccordionSummary>
             <AccordionDetails>
               {uniqueGenres.map(genre => (
                 <FormControlLabel  sx={{marginLeft: '0', display: 'flex', gap: 1}}
@@ -160,8 +172,36 @@ function Home() {
               ))}
             </AccordionDetails>
           </Accordion>
-          <Box sx={{ display: 'flex', flexDirection: 'column', width: '200px', gap: 1, textAlign: "start"  }}>
-            <h3>Price</h3>
+          <Accordion defaultExpanded  sx={{padding: '0 15px 0 0', margin: '20px 0 0 0', paddingBottom: "30px", borderBottom: '1px solid #e5e5e5', color: 'black'}} >
+            <AccordionSummary className="font-jost" disableGutters={true}
+                sx={{
+                  outline: 'unset',
+                  outlineWidth: '0',
+                  fontSize: '18.8px',
+                  fontFamily: '"Playfair Display", serif',
+                  fontWeight: 500,
+                  color: 'black',
+
+                  '& button': {
+                    color: 'black',
+                  },
+
+                  '& *': {
+                    color: 'black',
+                  },
+                }}
+             >Author</AccordionSummary>
+            <AccordionDetails>
+              {uniqueAuthors.map(author => (
+                <FormControlLabel sx={{marginLeft: '0', display: 'flex', gap: 1}}
+                key={author}
+                control={ <Checkbox checked={filters.authors.includes(author)} onChange={() => handleAuthorChange(author)} />}
+                label={author} />
+              ))}
+            </AccordionDetails>
+          </Accordion>
+          <Box sx={{ display: 'flex', flexDirection: 'column', width: '200px', gap: 1, textAlign: "start", fontFamily: '"Playfair Display", serif',  }}>
+            <h3 className="text-[20px] font-medium font-[Playfair Display]">Price</h3>
             <Slider
               getAriaLabel={() => 'Price'}
               value={value}
@@ -174,42 +214,100 @@ function Home() {
         {filteredBooks.length > 0 ? (
           <div>
             <h2>Books</h2> 
-            <Grid  sx={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 2 }}>
+            <Grid  sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2 }}>
               {filteredBooks.map(item => 
-              <Card key={item.id}  orientation="vertical" size="md" variant="outlined">
-                <CardContent>
-                  <AspectRatio objectFit="contain">
-                    {item.coverImage ? (
-                      <img src={item.coverImage} srcSet={item.coverImage} />
-                    ) : (
+                <Card
+                  key={item.id}
+                  orientation="vertical"
+                  size="md"
+                  variant="soft"
+                  sx={{
+                    bgcolor: 'transparent',
+                    position: 'relative',
+                    overflow: 'hidden',
+
+                    '& .add-to-cart-btn': {
+                      opacity: 0,
+                      transform: 'translateY(-60px)',
+                      transition: 'all 0.5s ease',
+                    },
+
+                    '&:hover .add-to-cart-btn': {
+                      opacity: 1,
+                      transform: 'translateY(0)',
+                    },
+                  }}
+                >
+                  <CardContent>
+                    <AspectRatio
+                      ratio={256 / 300}
+                      sx={{
+                        width: 256,
+                        height: 300,
+                        bgcolor: '#f7f7f7',
+                      }}
+                    >
                       <img
-                      src="https://images.unsplash.com/photo-1502657877623-f66bf489d236?auto=format&fit=crop&w=800"
-                      srcSet="https://images.unsplash.com/photo-1502657877623-f66bf489d236?auto=format&fit=crop&w=800&dpr=2 2x"
-                      alt="A beautiful landscape."
-                    />  
-                  )}
-                  </AspectRatio>
-                  <Typography level="title-lg">{item.price} $</Typography>
-                  <Typography level="title-lg">{item.title}</Typography>
-                  <Typography level="body-md">{item.description}</Typography>
-                </CardContent> 
-                <CardActions> 
-                <Button
-                    variant="contained"
-                    onClick={() => {
-                      addItem(item);
+                        src={item.coverImage}
+                        style={{
+                          width: '100%',
+                          paddingTop: '20px',
+                          paddingBottom: '20px',
+                          height: '100%',
+                          objectFit: 'contain',
+                        }}
+                      />
+                    </AspectRatio>
+                    <Typography level="title-lg" sx= {{ fontFamily: '"Playfair Display", serif', display: 'flex', justifyContent: 'center', paddingTop: '20px', marginTop: '10px', marginBottom: '10px' }}>{item.title}</Typography>
+                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px', marginTop: '10px' }}>
+                      {renderStars(item.rating)}
+                    </div>
+                    <Typography level="title-lg" sx={{ marginTop: '10px', marginBottom: '10px', display: 'flex', justifyContent: 'center', color: '#e52334', fontSize: '18px', fontWeight: '500', fontFamily: '"Jost", serif' }}>{item.price} $</Typography>
+                    {/* <Typography level="body-md">{item.description}</Typography> */}
+                  </CardContent> 
+                  <CardActions
+                    sx={{
+                      justifyContent: 'center',
 
-                      setAddedMessage(`"${item.title}" has been added to the cart!`);
-
-                      setTimeout(() => {
-                        setAddedMessage("");
-                      }, 1500);
+                      '& > .MuiButton-root': {
+                        flex: 'none !important',
+                        width: 'auto !important',
+                      },
                     }}
+
                   >
-                    Add to Cart
-                </Button>
-                </CardActions>
-              </Card>
+                    <Button
+                      className="add-to-cart-btn"
+                      variant="contained"
+                      sx={{
+                        padding: '15px 30px',
+                        fontSize: '14px',
+                        lineHeight: '20px',
+                        backgroundColor: '#e52334',
+                        color: '#ffffff',
+                        fontFamily: '"Jost", sans-serif',
+                        textTransform: 'uppercase',
+                        verticalAlign: 'middle',
+                        flex: 'none',
+                        borderRadius: '0',
+                        outline: 'none',
+                        width: 'auto',
+                        letterSpacing: '0.5px',
+                      }}  
+                      onClick={() => {
+                        addItem(item);
+
+                        setAddedMessage(`"${item.title}" has been added to the cart!`);
+
+                        setTimeout(() => {
+                          setAddedMessage("");
+                        }, 1500);
+                      }}
+                    >
+                      Add to Cart
+                    </Button>
+                  </CardActions>
+                </Card>
             )}
             </Grid>       
           </div>
@@ -223,7 +321,7 @@ function Home() {
       <Chat />
       {addedMessage && (
         <div
-          style={{
+          className={{
             position: "fixed",
             bottom: "20px",
             right: "20px",

@@ -25,10 +25,10 @@ export default function Chat() {
     };
 
     return (
-        <div style={{ maxWidth: 600, margin: "auto" }}>
-            <div style={{ minHeight: 400, border: "1px solid #ccc", padding: 10 }}>
+        <div className="max-w-2xl mx-auto">
+            <div className="min-h-[400px] border border-gray-300 p-2">
                 {messages.map((m, i) => (
-                    <div key={i} style={{ margin: "10px 0" }}>
+                    <div key={i} className="mb-2">
                         <b>{m.role}:</b> {m.text}
                     </div>
                 ))}
@@ -40,7 +40,9 @@ export default function Chat() {
                 placeholder="Ask about books..."
             />
 
-            <button onClick={sendMessage}>Send</button>
+            <button onClick={sendMessage} className="mt-2 px-4 py-2 bg-blue-500 text-white border-none rounded cursor-pointer">
+                Send
+            </button>
         </div>
     );
 }

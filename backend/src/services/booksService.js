@@ -1,9 +1,11 @@
 import { getBooks, getBook, removeBook, createBook, modifiedBook } from "../persistance/books.js";
 
-export const retriveBooks = async() => {
-    const books = await getBooks();
-    return books;
-}
+export const retriveBooks = async (limit, offset, filters) => {
+  const safeLimit = Number(limit) || 20;
+  const safeOffset = Number(offset) || 0;
+
+  return getBooks(safeLimit, safeOffset, filters);
+};
 
 export const retriveBook = async(id) => {
     const book = await getBook(id);

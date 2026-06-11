@@ -4,10 +4,29 @@ import { validateBookPayload } from '../validators/bookValidators.js';
 
 const booksRouter = express.Router();
 
-booksRouter.get('/', async(req, res) => {
-    const books = await retriveBooks();
-    res.send(books);
-})
+booksRouter.get("/", async (req, res) => {
+  try {
+    const page = Number(req.query.page) || 0;
+    const limit = Number(req.query.limit) || 20;
+
+    const filters = {
+      search: req.query.search || "",
+      genre: req.query.genre || "",
+      author: req.query.author || "",
+      minPrice: req.query.minPrice || null,
+      maxPrice: req.query.maxPrice || null,
+    };
+
+    const offset = page * limit;
+
+    const books = await retriveBooks(limit, offset, filters);
+
+    res.status(200).json(books);
+  } catch (err) {
+    console.log("BACKEND ERROR:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 booksRouter.get('/:id', async (req, res) => {
     const { id } = req.params;

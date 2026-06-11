@@ -1,9 +1,48 @@
 import { retrieveConnection } from "./db.js";
 
-export const getBooks = async() => {
-    const [books] = await retrieveConnection().execute(`SELECT * FROM books`);
-    return books;
-}
+
+export const getBooks = async (limit, offset, filters) => {
+  let sql = `
+    SELECT * FROM books
+    WHERE 1=1
+  `;
+
+  const values = [];
+
+  if (filters.search) {
+    sql += ` AND title LIKE ?`;
+    values.push(`%${filters.search}%`);
+  }
+
+  if (filters.genre) {
+    sql += ` AND categories LIKE ?`;
+    values.push(`%${filters.genre}%`);
+  }
+
+  if (filters.author) {
+    sql += ` AND authors LIKE ?`;
+    values.push(`%${filters.author}%`);
+  }
+
+  if (filters.minPrice !== null) {
+    sql += ` AND price >= ?`;
+    values.push(filters.minPrice);
+  }
+
+  if (filters.maxPrice !== null) {
+    sql += ` AND price <= ?`;
+    values.push(filters.maxPrice);
+  }
+
+  sql += `
+    ORDER BY id ASC
+    LIMIT ${limit}
+    OFFSET ${offset}
+  `;
+
+  const [books] = await retrieveConnection().execute(sql, values);
+  return books;
+};
 
 export const getBook = async(id) => {
     const [book] = await retrieveConnection().execute('SELECT * FROM `books` WHERE `id` = ?',  [id]);

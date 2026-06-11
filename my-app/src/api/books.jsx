@@ -1,10 +1,26 @@
 import { getAxiosInstance } from "./axios";
 
 
-const getBooks = async () => {
-  const data = await getAxiosInstance().get('/books/');
-  return data;
+const getBooks = (limit, page, filters = {}) => {
+
+  let url = `/books?limit=${limit}&page=${page}`;
+
+  if(filters.search){
+    url += `&search=${filters.search}`;
+  }
+
+  if(filters.genre){
+    url += `&genre=${filters.genre}`;
+  }
+
+  if(filters.author){
+    url += `&author=${filters.author}`;
+  }
+
+
+  return getAxiosInstance().get(url);
 };
+
 const getBook = async (id) => {
   const response = await getAxiosInstance().get(`/books/${id}`);
   return response.data;

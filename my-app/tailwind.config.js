@@ -8,7 +8,7 @@ export default {
     extend: {
       fontFamily: {
         jost: ['Jost', 'sans-serif'],
-        playfair: ['"Playfair Display"', 'serif'],
+        playfair: ['Playfair Display', 'sans-serif'],
       },
     },
   },

@@ -9,7 +9,7 @@ def check_stock(title: str) -> str:
 
     try:
         response = requests.get(
-            f"{BACKEND_URL}/books",
+            f"{BACKEND_URL}/api/books",
             timeout=5
         )
 

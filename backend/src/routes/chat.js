@@ -1,29 +1,27 @@
 import express from "express";
+import { chat } from "../services/chatService.js";
 
 const router = express.Router();
 
 router.post("/", async (req, res) => {
-    try {
-        const { message } = req.body;
+  try {
+    const { user_id, conversation_id, message } = req.body;
 
-        const response = await fetch("http://localhost:8000/chat", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ message })
-        });
-        const data = await response.json();
+    const result = await chat(
+      user_id,
+      conversation_id,
+      message
+    );
 
-        res.json({
-            reply: data.response
-        });
+    res.json(result);
 
-    } catch (err) {
-        res.status(500).json({
-            error: "AI service error"
-        });
-    }
+  } catch (err) {
+    console.log(err);
+
+    res.status(500).json({
+      error: "AI service error"
+    });
+  }
 });
 
 export default router;

@@ -8,7 +8,7 @@ from services.config import BACKEND_URL
 def give_review(title: str, review: str) -> str:
     """Submit a review for a book"""
 
-    books = requests.get(f"{BACKEND_URL}/books").json()
+    books = requests.get(f"{BACKEND_URL}/api/books").json()
 
     book = next(
         (b for b in books if title.lower() in b["title"].lower()),

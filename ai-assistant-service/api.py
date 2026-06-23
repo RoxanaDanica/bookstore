@@ -1,22 +1,30 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from typing import List
 from agent import agent
 
 app = FastAPI()
+class Message(BaseModel):
+    role: str
+    content: str
 
 class ChatRequest(BaseModel):
-    message: str
-
-def chat(message: str):
-    response = agent.invoke({
-        "messages": [
-            {"role": "user", "content": message}
-        ]
-    })
-
-    return response["messages"][-1].content
+    messages: List[Message]
 
 @app.post("/chat")
 def chat_endpoint(req: ChatRequest):
-    reply = chat(req.message)
-    return {"response": reply}
+    messages = [
+        {
+            "role": message.role,
+            "content": message.content
+        }
+        for message in req.messages
+    ]
+    response = agent.invoke({
+        "messages": messages
+    })
+    answer = response["messages"][-1].content
+
+    return {
+        "response": answer
+    }

@@ -4,7 +4,7 @@ const addDocument = async (document) => {
   const formData = new FormData();
   formData.append('file', document);
 
-  const data = await getAxiosInstance().post('/administrator', formData, {
+  const data = await getAxiosInstance().post('/api/administrator', formData, {
     headers: {
         'Content-Type': 'multipart/form-data'
     }

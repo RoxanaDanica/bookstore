@@ -4,6 +4,7 @@ import { initializeDatabase } from './src/persistance/db.js';
 import booksRouter from './src/routes/booksRoutes.js';
 import uploadFileRouter from './src/routes/uploadFileRoute.js';
 import chatRoute from './src/routes/chat.js';
+import usersRoute from './src/routes/usersRoutes.js';
 
 const app = express()
 app.use(express.json())
@@ -15,9 +16,10 @@ app.use('/test', (req, res) => {
   res.send('App worrks!');
 });
 
-app.use('/books', booksRouter);
-app.use('/administrator', uploadFileRouter);
+app.use('/api/books', booksRouter);
+app.use('/api/administrator', uploadFileRouter);
 app.use('/api/chat', chatRoute);
+app.use('/api/users', usersRoute);
 async function startApp() {
   await initializeDatabase();
   app.listen(3000, () => {

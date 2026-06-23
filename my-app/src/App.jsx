@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import axios from "axios";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 import Home from "./views/Home";
@@ -34,6 +36,21 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
+  useEffect(() => {
+    async function initGuest() {
+      let userId = localStorage.getItem("user_id");
+      if (!userId) {
+        const res = await axios.post(
+          "http://localhost:3000/users/guest"
+        );
+        userId = res.data.user_id;
+        localStorage.setItem("user_id", userId);
+      }
+    }
+    initGuest();
+
+  }, []);
+
   return (
     <CartProvider>
       <RouterProvider router={router} />

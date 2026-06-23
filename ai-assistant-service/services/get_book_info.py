@@ -2,33 +2,38 @@ import requests
 from langchain_core.tools import tool
 from services.config import BACKEND_URL
 
-
 @tool
 def get_book_info(title: str) -> str:
-    """Get information about a book from the store database"""
-    res = requests.get(f"{BACKEND_URL}/books")
+    """
+    Search for a book and return its details.
+    Use this whenever the user asks about a book.
+    """
+    res = requests.get(
+        f"{BACKEND_URL}/api/books"
+    )
 
     if res.status_code != 200:
-        return "Error accessing database."
+        return "I could not access the books database."
 
     books = res.json()
-    if not isinstance(books, list):
-        return "Invalid backend response."
-
     book = next(
-        (b for b in books if title.lower() in b["title"].lower()),
+        (
+            b for b in books
+            if title.lower() in b["title"].lower()
+        ),
         None
     )
-
     if not book:
-        return (
-            f"Book '{title}' is not available in our store. "
-            f"It is currently out of stock and we do not have a restock date yet."
-        )
+        return f"I could not find a book called {title}."
 
-    return (
-        f"Title: {book['title']}\n"
-        f"Author: {book['author']}\n"
-        f"Price: {book['price']}\n"
-    )
 
+    return f"""
+BOOK FOUND:
+
+Title: {book.get('title')}
+Author: {book.get('authors')}
+Genre: {book.get('categories')}
+Price: {book.get('price')}
+Stock: {book.get('stock', 'unknown')}
+Description: {book.get('description')}
+"""

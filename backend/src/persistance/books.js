@@ -1,37 +1,15 @@
 import { retrieveConnection } from "./db.js";
 
-
 export const getBooks = async (limit, offset, filters) => {
   let sql = `
     SELECT * FROM books
     WHERE 1=1
   `;
-
   const values = [];
 
-  if (filters.search) {
+  if(filters.search){
     sql += ` AND title LIKE ?`;
     values.push(`%${filters.search}%`);
-  }
-
-  if (filters.genre) {
-    sql += ` AND categories LIKE ?`;
-    values.push(`%${filters.genre}%`);
-  }
-
-  if (filters.author) {
-    sql += ` AND authors LIKE ?`;
-    values.push(`%${filters.author}%`);
-  }
-
-  if (filters.minPrice !== null) {
-    sql += ` AND price >= ?`;
-    values.push(filters.minPrice);
-  }
-
-  if (filters.maxPrice !== null) {
-    sql += ` AND price <= ?`;
-    values.push(filters.maxPrice);
   }
 
   sql += `
@@ -40,7 +18,10 @@ export const getBooks = async (limit, offset, filters) => {
     OFFSET ${offset}
   `;
 
-  const [books] = await retrieveConnection().execute(sql, values);
+  const [books] = await retrieveConnection().execute(
+    sql,
+    values
+  );
   return books;
 };
 
@@ -65,4 +46,3 @@ export const modifiedBook = async(id, modifyBook) => {
     const result = await retrieveConnection().execute('UPDATE books SET `title`=?, `author`=?, `genre`=?, `publisher`=?, `publicationYear`=?, `isbn`=?, `language`=?, `pages`=?, `description`=?, `coverImage`=?, `rating`=?, `availableCopies`=?, `price`=? WHERE `id`=?', [title, author, genre, publisher, publicationYear, isbn, language, pages, description, coverImage, rating, availableCopies, price, id]);
     return result;
 } 
- 

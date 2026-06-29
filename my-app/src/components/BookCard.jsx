@@ -8,9 +8,11 @@ import StarRateIcon from '@mui/icons-material/StarRate';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import StarHalfIcon from '@mui/icons-material/StarHalf';
 
+import { useNavigate } from "react-router-dom";
 import { useCart } from "react-use-cart";
 
 export default function BookCard({ item }) {
+  const navigate = useNavigate();
   const { addItem } = useCart();
     function renderStars(ratings_count) {
     const stars = [];
@@ -30,13 +32,16 @@ export default function BookCard({ item }) {
 
   return (
     <Card
+        onClick={() => navigate(`/books/${item.id}`)}
         orientation="vertical"
         size="md"
         variant="soft"
         sx={{
+        
         bgcolor: 'transparent',
         position: 'relative',
         overflow: 'hidden',
+        cursor: 'pointer',
 
         '& .add-to-cart-btn': {
             opacity: 0,

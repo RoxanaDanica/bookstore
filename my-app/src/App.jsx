@@ -7,6 +7,7 @@ import Administrator from "./views/Administrator";
 import Cart from "./components/Cart";
 import Checkout from "./views/Checkout";
 import { CartProvider } from "react-use-cart";
+import BookDetails from "./views/BookDetails";
 
 import MainLayout from "./components/Layout";
 import './index.css'
@@ -31,6 +32,14 @@ const router = createBrowserRouter([
         path: "/checkout",
         element: <Checkout />,
       },
+      {
+        path: "/books/:id",
+        element: <BookDetails />
+      },
+      {
+        path: "/reviews",
+        element: <BookDetails />
+      }
     ],
   },
 ]);

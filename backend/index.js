@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { initializeDatabase } from './src/persistance/db.js';
 import booksRouter from './src/routes/booksRoutes.js';
+import reviewRoute from './src/routes/reviewRoute.js';
 import uploadFileRouter from './src/routes/uploadFileRoute.js';
 import chatRoute from './src/routes/chat.js';
 import usersRoute from './src/routes/usersRoutes.js';
@@ -20,6 +21,7 @@ app.use('/api/books', booksRouter);
 app.use('/api/administrator', uploadFileRouter);
 app.use('/api/chat', chatRoute);
 app.use('/api/users', usersRoute);
+app.use('/api/reviews', reviewRoute);
 async function startApp() {
   await initializeDatabase();
   app.listen(3000, () => {

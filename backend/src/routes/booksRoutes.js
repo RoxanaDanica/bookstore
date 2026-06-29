@@ -88,5 +88,7 @@ booksRouter.get('/stock/:id', async (req, res) => {
         stock: book[0].stock || 0
     });
 });
+
+
  
 export default booksRouter; 

@@ -41,10 +41,23 @@ const addBook = async (book) => {
   const data = await getAxiosInstance().post('/api/books', book);
   return data;
 }
+
+const getReviews = async (bookId) => {
+  const response = await getAxiosInstance().get(`/api/reviews/${bookId}`);
+  return response.data;
+};
+
+const addReview = async (review) => {
+  const response = await getAxiosInstance().post("/api/reviews", review);
+  return response.data;
+};
+
 export { 
   getBooks, 
   getBook,
   deleteBook,
   updateBook,
-  addBook
+  addBook,
+  getReviews,
+  addReview
 };

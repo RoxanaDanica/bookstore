@@ -1,5 +1,6 @@
 import express from 'express';
 import { retrieveReviews, addReview } from '../services/reviewsService.js';
+import { authMiddleware } from '../middleware/authMiddleware.js';
 
 const reviewRoute = express.Router();
 
@@ -15,22 +16,20 @@ reviewRoute.get("/:bookId", async (req, res) => {
   }
 });
 
-reviewRoute.post("/", async (req, res) => {
+reviewRoute.post("/", authMiddleware, async (req, res) => {
   try {
-    const { bookId, userId, rating, comment } = req.body;
-
+    const { bookId, rating, comment } = req.body;
+    const userId = req.user.id; 
     if (!bookId || !rating) {
       return res.status(400).json({
         error: "bookId and rating are required"
       });
     }
-
     if (rating < 1 || rating > 5) {
       return res.status(400).json({
         error: "rating must be between 1 and 5"
       });
     }
-
     const review = await addReview({
       bookId,
       userId,
@@ -39,6 +38,7 @@ reviewRoute.post("/", async (req, res) => {
     });
 
     res.status(201).json(review);
+
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: err.message });

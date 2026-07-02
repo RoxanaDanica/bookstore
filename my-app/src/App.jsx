@@ -1,13 +1,14 @@
 import { useEffect } from "react";
 import axios from "axios";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { CartProvider } from "react-use-cart";
 
 import Home from "./views/Home";
 import Administrator from "./views/Administrator";
 import Cart from "./components/Cart";
 import Checkout from "./views/Checkout";
-import { CartProvider } from "react-use-cart";
 import BookDetails from "./views/BookDetails";
+import { createGuest } from "./api/auth";
 
 import MainLayout from "./components/Layout";
 import './index.css'
@@ -46,18 +47,19 @@ const router = createBrowserRouter([
 
 function App() {
   useEffect(() => {
-    async function initGuest() {
-      let userId = localStorage.getItem("user_id");
-      if (!userId) {
-        const res = await axios.post(
-          "http://localhost:3000/users/guest"
-        );
-        userId = res.data.user_id;
-        localStorage.setItem("user_id", userId);
+    async function initAuth() {
+      let token = localStorage.getItem("token");
+
+      if (!token) {
+        const res = await createGuest();
+
+        token = res.token;
+
+        localStorage.setItem("token", token);
       }
     }
-    initGuest();
 
+    initAuth();
   }, []);
 
   return (

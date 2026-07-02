@@ -3,6 +3,7 @@ import { useCart } from "react-use-cart";
 import { useForm } from "react-hook-form";
 import { size, z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+
 import LockIcon from '@mui/icons-material/Lock';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
@@ -35,7 +36,7 @@ export default function Checkout() {
   const [editStep, setEditStep] = useState(null);
   const [courier, setCourier] = useState("fan");
   const [loading, setLoading] = useState(false);
-  const [payment, setPayment] = useState("cash");
+  const [payment, setPayment] = useState("cash"); 
 
   const courierOptions = {
     fan: { name: "Fan Courier", price: 5 },
@@ -308,7 +309,6 @@ export default function Checkout() {
           </div>
 
       </div>
-
     </div>
   );
 }

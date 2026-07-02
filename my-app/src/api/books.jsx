@@ -3,7 +3,7 @@ import { getAxiosInstance } from "./axios";
 
 const getBooks = (limit, page, filters = {}) => {
 
-  let url = `/api/books?limit=${limit}&page=${page}`;
+  let url = `/books?limit=${limit}&page=${page}`;
 
   if(filters.search){
     url += `&search=${filters.search}`;
@@ -22,33 +22,33 @@ const getBooks = (limit, page, filters = {}) => {
 };
 
 const getBook = async (id) => {
-  const response = await getAxiosInstance().get(`/api/books/${id}`);
+  const response = await getAxiosInstance().get(`/books/${id}`);
   return response.data;
 };
 
 const deleteBook = async (id) => {
-  const data = await getAxiosInstance().delete(`/api/books/${id}`) ;
+  const data = await getAxiosInstance().delete(`/books/${id}`) ;
   console.log('data=>', data);
   return data;
 }
 const updateBook = async (id, book) => {
-  const data = await getAxiosInstance().put(`/api/books/${id}`, book);
+  const data = await getAxiosInstance().put(`/books/${id}`, book);
   console.log('data=>', data);
   return data;
 
 }
 const addBook = async (book) => {
-  const data = await getAxiosInstance().post('/api/books', book);
+  const data = await getAxiosInstance().post('/books', book);
   return data;
 }
 
 const getReviews = async (bookId) => {
-  const response = await getAxiosInstance().get(`/api/reviews/${bookId}`);
+  const response = await getAxiosInstance().get(`/reviews/${bookId}`);
   return response.data;
 };
 
 const addReview = async (review) => {
-  const response = await getAxiosInstance().post("/api/reviews", review);
+  const response = await getAxiosInstance().post("/reviews", review);
   return response.data;
 };
 

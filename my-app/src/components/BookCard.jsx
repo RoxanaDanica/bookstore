@@ -111,7 +111,8 @@ export default function BookCard({ item }) {
             width: 'auto',
             letterSpacing: '0.5px',
             }}  
-            onClick={() => {
+            onClick={(e) => {
+                e.stopPropagation();
                 addItem(item);
                 setAddedMessage(`"${item.title}" has been added to the cart!`);
                 setTimeout(() => {

@@ -89,6 +89,4 @@ booksRouter.get('/stock/:id', async (req, res) => {
     });
 });
 
-
- 
 export default booksRouter; 

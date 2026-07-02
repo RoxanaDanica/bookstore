@@ -1,11 +1,16 @@
 import { useCart } from "react-use-cart";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { jwtDecode } from "jwt-decode";
+import { colors } from "@mui/joy";
+
 import SidebarFilters from "./SidebarFilters";
 import LockIcon from '@mui/icons-material/Lock';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useState } from "react";
+import AuthSidePanel from "./AuthSidePanel";
+
 
 export default function Cart() {
   const {
@@ -19,6 +24,10 @@ export default function Cart() {
     emptyCart,
   } = useCart();
 
+  const [authOpen, setAuthOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const hasChosenGuest = localStorage.getItem("guest_chosen") === "true";
+
   const navigate = useNavigate();
     const [filters,setFilters] = useState({
     genre: [],
@@ -26,6 +35,36 @@ export default function Cart() {
     price:[0,100]
   });
 
+  const openAuthPanel = () => {
+      const auth = getAuthData();
+
+      if (!auth) {
+          setAuthOpen(true);
+          return;
+      }
+
+      if (auth.type === "guest") {
+          setAuthOpen(true);
+          return;
+      }
+
+      navigate("/checkout");
+  };
+  const handleAuthSuccess = (userData) => {
+    setUser(userData);
+    setAuthOpen(false);
+  };
+
+  const getAuthData = () => {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+
+    try {
+      return jwtDecode(token);
+    } catch {
+      return null;
+    }
+  };
 
   const books = items;
 
@@ -141,7 +180,7 @@ export default function Cart() {
 
               <div className="p-[20px]">
                   <button
-                  onClick={() => navigate("/checkout")}
+                  onClick={openAuthPanel}
                   className="w-full bg-[#e52334] text-white py-[15px] uppercase font-medium hover:cursor-pointer"
                 >
                   Go to Checkout
@@ -167,6 +206,12 @@ export default function Cart() {
 
           </div>
       </div>
+
+      <AuthSidePanel
+        open={authOpen}
+        onClose={() => setAuthOpen(false)}
+        onSuccess={handleAuthSuccess}
+      />
     </div>
   );
 }

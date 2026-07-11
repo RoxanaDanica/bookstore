@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { useCart } from "react-use-cart";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { size, z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { getCart, checkout } from "../api/cart";
 
 import LockIcon from '@mui/icons-material/Lock';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
@@ -10,10 +10,8 @@ import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 import CreateOutlinedIcon from '@mui/icons-material/CreateOutlined';
 import CheckOutlinedIcon from '@mui/icons-material/CheckOutlined';
-import { colors } from "@mui/joy";
 
 const STEP = { PERSONAL: 1, SHIPPING: 2, PAYMENT: 3, SUCCESS: 4, };
-
 const schema = z.object({
   fullName: z.string().min(2).max(60),
   street: z.string().min(3).max(100),
@@ -30,13 +28,18 @@ const schema = z.object({
 });
 
 export default function Checkout() {
-  const { items, cartTotal, totalItems, emptyCart } = useCart();
+  const [cart,setCart] = useState(null);
+  const [loadingCart,setLoadingCart] = useState(true);
 
   const [step, setStep] = useState(STEP.PERSONAL);
   const [editStep, setEditStep] = useState(null);
   const [courier, setCourier] = useState("fan");
   const [loading, setLoading] = useState(false);
-  const [payment, setPayment] = useState("cash"); 
+  const [payment,setPayment] = useState("cash");
+
+  const items = cart?.items || [];
+  const totalItems = cart?.totalItems || 0;
+  const cartTotal = cart?.cartTotal || 0;
 
   const courierOptions = {
     fan: { name: "Fan Courier", price: 5 },
@@ -76,28 +79,59 @@ export default function Checkout() {
     if (valid) goToStep(STEP.SHIPPING);
   };
 
-  const placeOrder = () => {
-    setLoading(true);
-
-    setTimeout(() => {
-      emptyCart();
-      setLoading(false);
+  const placeOrder = async () => {
+    try {
+      setLoading(true);
+      const response = await checkout({
+        paymentMethod: payment,
+        courier,
+        shippingAddress: {
+          fullName: getValues("fullName"),
+          street: getValues("street"),
+          city: getValues("city"),
+          county: getValues("county"),
+          country: getValues("country"),
+          email: getValues("mail")
+        }
+      });
+      console.log("Order created:", response.data.orderId);
       setStep(STEP.SUCCESS);
-    }, 1000);
+    }
+    catch(err){
+      alert(err.response?.data?.error || "Unable to place order");
+    }
+    finally{
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadCart();
+  }, []);
+
+  const loadCart = async () => {
+    try {
+      setLoadingCart(true);
+      const response = await getCart();
+      setCart(response.data);
+    }
+    catch(err){
+      console.log(err);
+    }
+    finally{
+      setLoadingCart(false);
+    }
   };
 
   function Section({ title, stepId, children, summary }) {
     const active = step === stepId;
     const readOnly = step > stepId && !isEditing(stepId);
-
     return (
       <div className="border border-[#e5e5e5] p-4 mb-4">
-
         <div className="flex justify-between items-center">
           <h1 className="font-['playfair'] text-[20px]">
             {title}
           </h1>
-
           {readOnly && (
             <button
               onClick={() => startEdit(stepId)}
@@ -108,17 +142,21 @@ export default function Checkout() {
           )}
         </div>
 
-
         {active && (
           <div>
             {children}
           </div>
         )}
-
         {readOnly && summary}
-
       </div>
     );
+  }
+
+  if(loadingCart){
+    return <h2>Loading checkout...</h2>;
+  }
+  if(!cart || cart.items.length === 0){
+    return <h2>Your cart is empty</h2>;
   }
   return (
     <div className="w-[1400px] mx-auto flex">
@@ -224,14 +262,14 @@ export default function Checkout() {
               <input
                 type="radio"
                 name="payment"
-                value="check"
-                checked={payment === "check"}
+                value="card"
+                checked={payment === "card"}
                 onChange={(e) => setPayment(e.target.value)}
                 className="w-[18px] h-[18px] cursor-pointer"
               />
 
               <span className="font-['Jost'] font-medium">
-                Pay by Check
+                Pay by Card
               </span>
             </label>
 
@@ -240,14 +278,14 @@ export default function Checkout() {
               <input
                 type="radio"
                 name="payment"
-                value="wire"
-                checked={payment === "wire"}
+                value="bank_transfer"
+                checked={payment === "bank_transfer"}
                 onChange={(e) => setPayment(e.target.value)}
                 className="w-[18px] h-[18px] cursor-pointer"
               />
 
               <span className="font-['Jost'] font-medium">
-                Pay by Bank Wire
+                Pay by bank_transfer
               </span>
             </label>
 

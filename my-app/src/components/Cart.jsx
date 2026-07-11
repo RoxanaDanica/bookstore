@@ -1,8 +1,7 @@
-import { useCart } from "react-use-cart";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
-import { colors } from "@mui/joy";
+import { getCart, updateCartItem, removeCartItem } from "../api/cart";
 
 import SidebarFilters from "./SidebarFilters";
 import LockIcon from '@mui/icons-material/Lock';
@@ -13,20 +12,10 @@ import AuthSidePanel from "./AuthSidePanel";
 
 
 export default function Cart() {
-  const {
-    isEmpty,
-    items,
-    totalUniqueItems,
-    totalItems,
-    cartTotal,
-    removeItem,
-    updateItemQuantity,
-    emptyCart,
-  } = useCart();
+  const [cart, setCart] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const [authOpen, setAuthOpen] = useState(false);
-  const [user, setUser] = useState(null);
-  const hasChosenGuest = localStorage.getItem("guest_chosen") === "true";
 
   const navigate = useNavigate();
     const [filters,setFilters] = useState({
@@ -34,6 +23,58 @@ export default function Cart() {
     author: [],
     price:[0,100]
   });
+
+  useEffect(() => {
+    loadCart();
+  }, []);
+
+  const loadCart = async () => {
+    try{
+      setLoading(true);
+      const response = await getCart();
+      setCart(response.data);
+    }
+    finally{
+      setLoading(false);
+    }
+  };
+
+  const increaseQuantity = async (item) => {
+    try {
+      const response = await updateCartItem(
+        item.book_id,
+        item.quantity + 1
+      );
+
+      setCart(response.data);
+    } catch (err) {
+      alert(err.response?.data?.error || "Unable to update cart.");
+    }
+  };
+
+  const decreaseQuantity = async (item) => {
+    if (item.quantity <= 1) return;
+
+    try {
+      const response = await updateCartItem(
+        item.book_id,
+        item.quantity - 1
+      );
+
+      setCart(response.data);
+    } catch (err) {
+      alert(err.response?.data?.error || "Unable to update cart.");
+    }
+  };
+  const deleteItem = async (item) => {
+    try {
+      const response = await removeCartItem(item.book_id);
+
+      setCart(response.data);
+    } catch (err) {
+      alert(err.response?.data?.error || "Unable to remove item.");
+    }
+  };
 
   const openAuthPanel = () => {
       const auth = getAuthData();
@@ -50,9 +91,9 @@ export default function Cart() {
 
       navigate("/checkout");
   };
-  const handleAuthSuccess = (userData) => {
-    setUser(userData);
+  const handleAuthSuccess = () => {
     setAuthOpen(false);
+    navigate("/checkout");
   };
 
   const getAuthData = () => {
@@ -66,10 +107,15 @@ export default function Cart() {
     }
   };
 
-  const books = items;
+  const books = cart?.items || [];
 
-  if (isEmpty) return <h2>Cart is empty</h2>;
+  if (loading) {
+      return <h2>Loading...</h2>;
+  }
 
+  if (!cart || cart.items.length === 0) {
+    return <h2>Cart is empty</h2>;
+  }
   return (
     <div className="flex flex-row w-[1400px] mx-auto" >
       <SidebarFilters 
@@ -84,7 +130,7 @@ export default function Cart() {
             Shopping Cart
           </h2>
 
-          {items.map((item) => (
+          {cart.items.map((item) => (
             <div
               key={item.id}
               className="flex items-center justify-between border border-[#e5e5e5] bg-white p-5 mb-4"
@@ -120,7 +166,7 @@ export default function Cart() {
                   <button
                     className="px-3 py-2"
                     onClick={() =>
-                      updateItemQuantity(item.id, item.quantity - 1)
+                      decreaseQuantity(item)
                     }
                   >
                     -
@@ -133,7 +179,7 @@ export default function Cart() {
                   <button
                     className="px-3 py-2"
                     onClick={() =>
-                      updateItemQuantity(item.id, item.quantity + 1)
+                      increaseQuantity(item)
                     }
                   >
                     +
@@ -145,7 +191,7 @@ export default function Cart() {
                 </p>
 
                 <button
-                  onClick={() => removeItem(item.id)}
+                  onClick={() => deleteItem(item)}
                   className="text-red-600 hover:text-red-800"
                 >
                   <DeleteIcon sx={{ color: '#878787' }} />
@@ -159,8 +205,8 @@ export default function Cart() {
             <div className="w-full p-[10px] relative block mb-5 bg-white border border-[#e5e5e5] h-fit">
               <div className="p-[20px]">
                 <div className="flex flex-row justify-between mb-[15px]">
-                  <p className="font-semibold">{totalItems} items</p>
-                  <p className="font-semibold text-[#e52334]">{cartTotal.toFixed(2)} $</p>
+                  <p className="font-semibold">{cart.totalItems} items</p>
+                  <p className="font-semibold text-[#e52334]">{cart.cartTotal.toFixed(2)} $</p>
                 </div>
                 <div className="flex flex-row justify-between mb-[15px]">
                   <p className="font-semibold">Shipping:</p>
@@ -170,7 +216,7 @@ export default function Cart() {
               <div className="p-[20px]"> 
                 <div className="flex flex-row justify-between mb-[15px]">
                   <p className="font-semibold">Total (tax excl.) </p>
-                  <p className="font-semibold text-[#e52334]">{cartTotal.toFixed(2)} $</p>
+                  <p className="font-semibold text-[#e52334]">{cart.cartTotal.toFixed(2)} $</p>
                 </div>
                 <div className="flex flex-row justify-between mb-[15px]">
                   <p className="font-semibold">Taxes: </p>

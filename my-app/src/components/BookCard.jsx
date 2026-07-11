@@ -9,12 +9,14 @@ import StarBorderIcon from '@mui/icons-material/StarBorder';
 import StarHalfIcon from '@mui/icons-material/StarHalf';
 
 import { useNavigate } from "react-router-dom";
-import { useCart } from "react-use-cart";
+import { useState } from "react";
+import { addCartItem } from "../api/cart";
 
 export default function BookCard({ item }) {
   const navigate = useNavigate();
-  const { addItem } = useCart();
-    function renderStars(ratings_count) {
+  const [addedMessage, setAddedMessage] = useState("");
+
+  function renderStars(ratings_count) {
     const stars = [];
 
     for (let i = 1; i <= 5; i++) {
@@ -111,19 +113,39 @@ export default function BookCard({ item }) {
             width: 'auto',
             letterSpacing: '0.5px',
             }}  
-            onClick={(e) => {
-                e.stopPropagation();
-                addItem(item);
-                setAddedMessage(`"${item.title}" has been added to the cart!`);
-                setTimeout(() => {
-                setAddedMessage("");
-                }, 1500);
-            }}
+            onClick={async (e) => {
+              e.stopPropagation();
+              try {
+                  await addCartItem(item.id, 1);
+                  setAddedMessage(`"${item.title}" has been added to the cart!`);
+                  setTimeout(() => {
+                      setAddedMessage("");
+                  }, 1500);
+
+              } catch (err) {
+                  console.error(err);
+                  setAddedMessage(`Could not add "${item.title}" to cart`);
+                  setTimeout(() => {
+                      setAddedMessage("");
+                  }, 1500);
+              }
+          }}
 
         >
           Add to Cart
         </Button>
       </CardActions>
+      {addedMessage && (
+          <Typography
+              sx={{
+                  textAlign: "center",
+                  color: "#e52334",
+                  marginTop: "10px"
+              }}
+          >
+              {addedMessage}
+          </Typography>
+      )}
     </Card>
   );
 }

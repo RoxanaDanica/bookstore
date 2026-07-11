@@ -7,6 +7,7 @@ import uploadFileRouter from './src/routes/uploadFileRoute.js';
 import chatRoute from './src/routes/chat.js';
 import usersRoute from './src/routes/usersRoutes.js';
 import authRouter from './src/routes/authRoutes.js';
+import cartRouter from './src/routes/cartRouter.js';
 
 const app = express()
 app.use(express.json())
@@ -24,6 +25,7 @@ app.use('/api/chat', chatRoute);
 app.use('/api/users', usersRoute);
 app.use('/api/reviews', reviewRoute);
 app.use('/api/auth', authRouter);
+app.use('/api/cart', cartRouter);
 async function startApp() {
   await initializeDatabase();
   app.listen(3000, () => {

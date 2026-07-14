@@ -14,8 +14,19 @@ export const createOrderFromCart = async (userId) => {
     }
 
     const [items] = await retrieveConnection().execute(
-        `SELECT * FROM cart_items WHERE cart_id=?`,
-        [cart.id]
+        `SELECT
+            ci.book_id,
+            ci.quantity,
+            b.price
+        FROM cart_items ci
+        JOIN books b ON ci.book_id = b.id
+        WHERE ci.cart_id = ?
+        `, [cart.id]
+    );
+
+    const total = items.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0
     );
 
     if (items.length === 0) {
@@ -25,16 +36,18 @@ export const createOrderFromCart = async (userId) => {
     const orderId = uuidv4();
 
     await retrieveConnection().execute(
-        `INSERT INTO orders (id, user_id, status, created_at)
-         VALUES (?, ?, 'pending', NOW())`,
-        [orderId, userId]
+        `INSERT INTO orders
+        (id, user_id, total, status, created_at)
+        VALUES (?, ?, ?, 'pending', NOW())
+        `,
+        [orderId, userId, total]
     );
 
     for (const item of items) {
         await retrieveConnection().execute(
-            `INSERT INTO order_items (id, order_id, book_id, quantity)
-             VALUES (?, ?, ?, ?)`,
-            [uuidv4(), orderId, item.book_id, item.quantity]
+            `INSERT INTO order_items (id, order_id, book_id, quantity, unit_price)
+             VALUES (?, ?, ?, ?, ?)`,
+            [uuidv4(), orderId, item.book_id, item.quantity, item.price]
         );
 
         await decreaseBookStock(item.book_id, item.quantity);
@@ -55,11 +68,8 @@ export const createOrderFromCart = async (userId) => {
 
 export const decreaseBookStock = async (bookId, quantity) => {
     await retrieveConnection().execute(
-        `
-        UPDATE books
+        `UPDATE books
         SET stock = stock - ?
-        WHERE id = ?
-        `,
-        [quantity, bookId]
+        WHERE id = ?`, [quantity, bookId]
     );
 };

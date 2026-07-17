@@ -1,6 +1,4 @@
 import { getAxiosInstance } from "./axios";
-
-
 const getBooks = (limit, page, filters = {}) => {
 
   let url = `/books?limit=${limit}&page=${page}`;
@@ -26,14 +24,16 @@ const getBook = async (id) => {
   return response.data;
 };
 
+const getBooksCategories = async () => {
+  const response = await getAxiosInstance().get('/books/categories');
+  return response.data;
+}
 const deleteBook = async (id) => {
   const data = await getAxiosInstance().delete(`/books/${id}`) ;
-  console.log('data=>', data);
   return data;
 }
 const updateBook = async (id, book) => {
   const data = await getAxiosInstance().put(`/books/${id}`, book);
-  console.log('data=>', data);
   return data;
 
 }
@@ -52,6 +52,11 @@ const addReview = async (review) => {
   return response.data;
 };
 
+const getTopRatedBooks = async () => {
+  const response = await getAxiosInstance().get('/books/top-rated');
+  return response.data;
+};
+
 export { 
   getBooks, 
   getBook,
@@ -59,5 +64,7 @@ export {
   updateBook,
   addBook,
   getReviews,
-  addReview
+  addReview,
+  getBooksCategories,
+  getTopRatedBooks
 };

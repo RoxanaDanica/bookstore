@@ -30,6 +30,32 @@ export const getBook = async(id) => {
     return book;
 } 
 
+export const getBooksCategories = async() => {
+    const [bookCategories] = await retrieveConnection().execute(`
+      SELECT b.categories, b.thumbnail
+      FROM books b
+      WHERE b.id IN (
+          SELECT MIN(id)
+          FROM books
+          WHERE categories IS NOT NULL
+          GROUP BY categories
+      )
+      LIMIT 8;
+      `);
+    return bookCategories;
+}
+
+export const getTopRatedBooks = async () => {
+  const [books] = await retrieveConnection().execute(`
+    SELECT *
+    FROM books
+    WHERE average_rating IS NOT NULL
+    ORDER BY average_rating DESC
+    LIMIT 20
+  `);
+  return books;
+};
+
 export const removeBook = async(id) => {
     const [book] = await retrieveConnection().execute('DELETE FROM books WHERE `id` = ?', [id]);
     return book;

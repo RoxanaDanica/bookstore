@@ -1,5 +1,5 @@
 import express from 'express';
-import { retriveBooks, retriveBook, deleteBook, addBook, editBook } from '../services/booksService.js';
+import { retriveBooks, retriveBook, deleteBook, addBook, editBook, retriveBooksCategories, retriveTopRatedBooks } from '../services/booksService.js';
 import { validateBookPayload } from '../validators/bookValidators.js';
 
 const booksRouter = express.Router();
@@ -26,6 +26,24 @@ booksRouter.get("/", async (req, res) => {
     console.log("BACKEND ERROR:", err);
     res.status(500).json({ error: err.message });
   }
+});
+
+booksRouter.get('/categories', async (req, res) => {
+    const bookCategories = await retriveBooksCategories();
+    console.log("Route categories:", bookCategories);
+    res.send(bookCategories);
+});
+
+booksRouter.get('/top-rated', async (req, res) => {
+    try {
+        const books = await retriveTopRatedBooks();
+        res.status(200).json(books);
+    } catch(error) {
+        console.error("TOP RATED ERROR:", error);
+        res.status(500).json({
+            error: error.message
+        });
+    }
 });
 
 booksRouter.get('/:id', async (req, res) => {

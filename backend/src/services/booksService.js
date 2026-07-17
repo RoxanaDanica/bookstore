@@ -1,4 +1,4 @@
-import { getBooks, getBook, removeBook, createBook, modifiedBook } from "../persistance/books.js";
+import { getBooks, getBook, removeBook, createBook, modifiedBook, getBooksCategories, getTopRatedBooks } from "../persistance/books.js";
 
 export const retriveBooks = async (limit, offset, filters) => {
   const safeLimit = Number(limit) || 20;
@@ -11,6 +11,15 @@ export const retriveBook = async(id) => {
     const book = await getBook(id);
     return book;
 }
+
+export const retriveBooksCategories = async() => {
+    const bookCategories = await getBooksCategories();
+    return bookCategories;
+}
+
+export const retriveTopRatedBooks = async () => {
+    return getTopRatedBooks();
+};
 
 export const deleteBook = async(id) => {
     const book = await removeBook(id);

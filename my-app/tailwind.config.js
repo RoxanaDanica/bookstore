@@ -10,6 +10,19 @@ export default {
         jost: ['Jost', 'sans-serif'],
         playfair: ['Playfair Display', 'sans-serif'],
       },
+      keyframes: {
+        fixedAnim: {
+          "0%": {
+            transform: "translateY(-100%)",
+          },
+          "100%": {
+            transform: "translateY(0)",
+          },
+        },
+      },
+      animation: {
+        fixedAnim: "fixedAnim 0.9s ease both",
+      },
     },
   },
   plugins: [],

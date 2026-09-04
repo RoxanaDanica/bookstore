@@ -6,6 +6,7 @@ from services.check_book_stock import check_stock
 
 model = ChatOllama(model="qwen2.5")
 
+
 agent = create_agent(
     model=model,
     tools=[
@@ -52,4 +53,5 @@ agent = create_agent(
         If the user asks a follow-up question like "price", "stock", "reviews", use the most recently mentioned book unless specified otherwise.
         """
     )
+
 )

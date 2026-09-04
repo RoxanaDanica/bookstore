@@ -159,7 +159,7 @@ export default function Checkout() {
     return <h2>Your cart is empty</h2>;
   }
   return (
-    <div className="w-[1400px] mx-auto flex">
+    <div className="w-[1400px] mx-auto flex mt-[80px] mb-[80px]">
       <div className="w-[67%]">
         <Section
           title={'1 Personal Information'}

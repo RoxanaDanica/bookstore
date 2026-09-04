@@ -2,35 +2,44 @@ import { randomUUID } from "crypto";
 import { createConversation } from "../persistance/conversations.js";
 import {
   createMessage,
-  getMessagesByConversation
+  getMessagesByConversation,
+  findConversation,
+  getConversationMessages
 } from "../persistance/messages.js";
 
-export const chat = async (user_id, conversation_id, message) => {
-  if (!user_id) {
-    user_id = randomUUID();
+export const chat = async ( userId, conversationId, message ) => {
+  if (!userId) {
+    throw new Error("Missing user_id");
   }
 
-  if (!conversation_id) {
-    conversation_id = randomUUID();
-    await createConversation(
-      conversation_id,
-      user_id
-    );
+  if (!conversationId) {
+    throw new Error("Missing conversation_id");
   }
+
+  const conversation = await findConversation(
+    userId,
+    conversationId
+  );
+
+  if (!conversation) {
+    throw new Error("Conversation not found");
+  }
+
   await createMessage(
-    conversation_id,
+    conversationId,
     "user",
     message
   );
+
   const history = await getMessagesByConversation(
-    conversation_id
+    conversationId
   );
+
   const messages = history.map((item) => ({
     role: item.role,
     content: item.content
   }));
 
-  console.log("SENDING TO AI:", messages);
 
   const response = await fetch(
     "http://host.docker.internal:8000/chat",
@@ -48,14 +57,55 @@ export const chat = async (user_id, conversation_id, message) => {
   const data = await response.json();
   const answer = data.response ?? "AI did not return a response";
   await createMessage(
-    conversation_id,
+    conversationId,
     "assistant",
     answer
   );
 
   return {
     reply: answer,
-    conversation_id,
-    user_id
+    conversation_id: conversationId
+  };
+};
+
+export const getConversation = async ( userId, conversationId ) => {
+  console.log("GET CONVERSATION id", conversationId);
+  if (!userId) {
+    throw new Error("Missing user_id");
+  }
+
+  const conversation = await findConversation(
+    userId,
+    conversationId
+  );
+
+  console.log("FOUND CONVERSATION:", conversation);
+
+  if (!conversation) {
+    return {
+      conversation_id: null,
+      messages: []
+    };
+  }
+
+  const messages = await getConversationMessages(
+    conversation.id
+  );
+
+  return {
+    conversation_id: conversation.id,
+    messages
+  };
+};
+
+export const startConversation = async (userId) => {
+  if (!userId) {
+    throw new Error("Missing user_id");
+  }
+
+  const conversation = await createConversation(userId);
+
+  return {
+    conversation_id: conversation.id
   };
 };

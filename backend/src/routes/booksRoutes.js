@@ -30,7 +30,6 @@ booksRouter.get("/", async (req, res) => {
 
 booksRouter.get('/categories', async (req, res) => {
     const bookCategories = await retriveBooksCategories();
-    console.log("Route categories:", bookCategories);
     res.send(bookCategories);
 });
 

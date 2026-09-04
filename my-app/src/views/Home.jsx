@@ -93,7 +93,7 @@ function Home() {
 
   const [chatOpen, setChatOpen] = useState(false);
 
-  useInfiniteScroll(loadBooks, hasMore);
+  // useInfiniteScroll(loadBooks, hasMore);
 
   return (
     <div className="flex flex-col items-center relative">
@@ -190,7 +190,7 @@ function Home() {
         </div>
       </section>
 
-      {/* <div style={{ display: "grid", gridTemplateColumns: "320px 1fr", width: "1400px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "320px 1fr", width: "1400px" }}>
         <SidebarFilters
           books={books}
           filters={filters}
@@ -198,10 +198,10 @@ function Home() {
         />
 
         <BookGrid books={books} />
-      </div> */}
+      </div>
 
       <button
-        onClick={() => setChatOpen(true)}
+        onClick={() => setChatOpen(!chatOpen)}
         className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-[#e52334] text-white text-2xl shadow-lg flex items-center justify-center hover:cursor-pointer"
       >
         <SmsOutlinedIcon />

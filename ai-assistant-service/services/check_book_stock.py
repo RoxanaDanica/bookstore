@@ -12,7 +12,6 @@ def check_stock(title: str) -> str:
             f"{BACKEND_URL}/api/books",
             timeout=5
         )
-
         response.raise_for_status()
 
         data = response.json()

@@ -18,10 +18,7 @@ export default function Chat() {
         setMessages(res.data.messages ?? []);
         setConversationId(res.data.conversation_id ?? null);
       } catch (err) {
-        console.error("Could not load conversation");
-        console.error("STATUS:", err.response?.status);
-        console.error("DATA:", err.response?.data);
-        console.error("MESSAGE:", err.message);
+        console.error("Could not load conversation", err);
 
       } finally {
         setLoading(false);
@@ -48,10 +45,22 @@ export default function Chat() {
   }
 };
 
-  const sendMessage = async () => {
-    const message = input.trim();
+const sendMessage = async () => {
+  const message = input.trim();
 
-    if (!message || thinking || !conversationId) return;
+  if (!message || thinking) return;
+
+  setThinking(true);
+
+  try {
+    let activeConversationId = conversationId;
+
+    if (!activeConversationId) {
+      const startRes = await startConversation();
+
+      activeConversationId = startRes.data.conversation_id;
+      setConversationId(activeConversationId);
+    }
 
     setMessages((prev) => [
       ...prev,
@@ -62,35 +71,33 @@ export default function Chat() {
     ]);
 
     setInput("");
-    setThinking(true);
 
-    try {
-      const res = await sendChatMessage({
-        message,
-        conversation_id: conversationId,
-      });
+    const res = await sendChatMessage({
+      message,
+      conversation_id: activeConversationId,
+    });
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          text: res.data.reply,
-        },
-      ]);
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "assistant",
+        text: res.data.reply,
+      },
+    ]);
+  } catch (err) {
+    console.error(err);
 
-      setConversationId(res.data.conversation_id);
-    } catch (err) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          text: "AI service error",
-        },
-      ]);
-    } finally {
-      setThinking(false);
-    }
-  };
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "assistant",
+        text: "AI service error",
+      },
+    ]);
+  } finally {
+    setThinking(false);
+  }
+};
 
   if (loading) {
     return (
@@ -104,7 +111,7 @@ export default function Chat() {
     <div className="flex flex-col h-[500px] border border-[#e5e5e5] rounded-lg overflow-hidden">
       <button
         onClick={handleNewConversation}
-        className="text-sm px-3 py-1 border rounded"
+        className="text-sm px-3 py-1 border rounded hover:cursor-pointer hover:bg-[#e52334] hover:text-white transition-all duration-200"
       >
         New chat
       </button>
@@ -147,21 +154,23 @@ export default function Chat() {
       </div>
 
       <div className="p-2 border-t border-[#e5e5e5] flex gap-2 bg-white">
-        <input
+        <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
               sendMessage();
             }
           }}
-          className="flex-1 border border-[#e5e5e5] rounded px-3 py-2 text-sm"
+          className="flex-1 border border-[#e5e5e5] rounded px-3 py-2 text-sm resize-none"
           placeholder="Type a message..."
+          rows={1}
         />
 
         <button
           onClick={sendMessage}
-          disabled={thinking || !conversationId}
+          disabled={thinking}
           className="bg-[#e52334] text-white px-4 py-2 rounded hover:cursor-pointer disabled:opacity-50"
         >
           Send

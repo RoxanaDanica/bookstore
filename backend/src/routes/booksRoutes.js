@@ -1,6 +1,14 @@
-import express from 'express';
-import { retriveBooks, retriveBook, deleteBook, addBook, editBook, retriveBooksCategories, retriveTopRatedBooks } from '../services/booksService.js';
-import { validateBookPayload } from '../validators/bookValidators.js';
+import express from "express";
+import {
+  retriveBooks,
+  retriveBook,
+  deleteBook,
+  addBook,
+  editBook,
+  retriveBooksCategories,
+  retriveTopRatedBooks,
+  searchBooks
+} from "../services/booksService.js";
 
 const booksRouter = express.Router();
 
@@ -19,37 +27,79 @@ booksRouter.get("/", async (req, res) => {
 
     const offset = page * limit;
 
-    const books = await retriveBooks(limit, offset, filters);
+    const books = await retriveBooks(
+      limit,
+      offset,
+      filters
+    );
 
     res.status(200).json(books);
   } catch (err) {
     console.log("BACKEND ERROR:", err);
-    res.status(500).json({ error: err.message });
+
+    res.status(500).json({
+      error: err.message
+    });
   }
 });
 
-booksRouter.get('/categories', async (req, res) => {
-    const bookCategories = await retriveBooksCategories();
-    res.send(bookCategories);
-});
 
-booksRouter.get('/top-rated', async (req, res) => {
-    try {
-        const books = await retriveTopRatedBooks();
-        res.status(200).json(books);
-    } catch(error) {
-        console.error("TOP RATED ERROR:", error);
-        res.status(500).json({
-            error: error.message
-        });
+booksRouter.get("/search", async (req, res) => {
+  try {
+    const { title } = req.query;
+
+    if (!title) {
+      return res.status(400).json({
+        error: "title is required"
+      });
     }
+
+    const books = await searchBooks(title);
+
+    res.status(200).json(books);
+  } catch (err) {
+    console.log("SEARCH ERROR:", err);
+
+    res.status(500).json({
+      error: err.message
+    });
+  }
 });
 
-booksRouter.get('/:id', async (req, res) => {
-    const { id } = req.params;
-    const book = await retriveBook(id);
-    res.send(book[0]);
-})
+
+booksRouter.get("/categories", async (req, res) => {
+  const bookCategories =
+    await retriveBooksCategories();
+
+  res.send(bookCategories);
+});
+
+
+booksRouter.get("/top-rated", async (req, res) => {
+  try {
+    const books = await retriveTopRatedBooks();
+
+    res.status(200).json(books);
+  } catch (error) {
+    console.error(
+      "TOP RATED ERROR:",
+      error
+    );
+
+    res.status(500).json({
+      error: error.message
+    });
+  }
+});
+
+
+booksRouter.get("/:id", async (req, res) => {
+  const { id } = req.params;
+
+  const book = await retriveBook(id);
+
+  res.send(book[0]);
+});
 
 booksRouter.delete('/:id', async(req,res) => {
     const { id } = req.params;
@@ -79,18 +129,6 @@ booksRouter.put('/:id', async(req, res)=> {
         res.send(error.message);
     }
 })
-
-booksRouter.get('/search', async (req, res) => {
-    const { title } = req.query;
-
-    const books = await retriveBooks();
-
-    const result = books.filter(book =>
-        book.title.toLowerCase().includes(title.toLowerCase())
-    );
-
-    res.send(result);
-});
 
 booksRouter.get('/stock/:id', async (req, res) => {
     const { id } = req.params;

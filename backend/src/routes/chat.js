@@ -27,10 +27,13 @@ router.post("/", authMiddleware, async (req, res) => {
 
     console.log("POST USER:", userId);
 
+    const token = req.headers.authorization?.split(" ")[1];
+
     const result = await chat(
       userId,
       conversation_id,
-      message
+      message,
+      token
     );
 
     res.json(result);
@@ -46,9 +49,7 @@ router.post("/", authMiddleware, async (req, res) => {
 router.get("/", authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
-
     console.log("GET USER:", userId);
-
     const result = await getConversation(userId);
     console.log(userId, "GET CONVERSATION RESULT:", result);
 

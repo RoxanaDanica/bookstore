@@ -72,3 +72,17 @@ export const modifiedBook = async(id, modifyBook) => {
     const result = await retrieveConnection().execute('UPDATE books SET `title`=?, `author`=?, `genre`=?, `publisher`=?, `publicationYear`=?, `isbn`=?, `language`=?, `pages`=?, `description`=?, `coverImage`=?, `rating`=?, `availableCopies`=?, `price`=? WHERE `id`=?', [title, author, genre, publisher, publicationYear, isbn, language, pages, description, coverImage, rating, availableCopies, price, id]);
     return result;
 } 
+
+export const searchBooksByTitle = async (title) => {
+  const [books] = await retrieveConnection().execute(
+    `
+    SELECT *
+    FROM books
+    WHERE LOWER(title) LIKE LOWER(?)
+    LIMIT 10
+    `,
+    [`%${title}%`]
+  );
+
+  return books;
+};

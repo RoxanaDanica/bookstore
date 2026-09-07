@@ -14,37 +14,42 @@ export default function BookDetails() {
     const [comment, setComment] = useState("");
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-            const bookRes = await getBook(id);
-            setBook(bookRes);
-            const reviewsRes = await getReviews(id);
-            setReviews(reviewsRes);
-            } catch(err) {
-                console.log(err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchData();
+    const fetchData = async () => {
+        try {
+        const bookRes = await getBook(id);
+        setBook(bookRes);
+
+        const reviewsRes = await getReviews(id);
+
+        setReviews(reviewsRes);
+        } catch (err) {
+        console.log(err);
+        } finally {
+        setLoading(false);
+        }
+    };
+
+    fetchData();
     }, [id]);
 
     const handleAddReview = async () => {
-        if (!comment.trim()) return;
-        try {
-            const newReview = await addReview({
-            bookId: id,
-            userId: 1, 
-            rating,
-            comment,
-            });
+    if (!comment.trim() || rating === 0) return;
 
-            setReviews((prev) => [newReview, ...prev]);
-            setComment("");
-            setRating(5);
-        } catch (err) {
-            console.log(err);
-        }
+    try {
+        await addReview({
+        bookId: id,
+        rating,
+        comment,
+        });
+
+        const reviewsRes = await getReviews(id);
+        setReviews(reviewsRes);
+
+        setComment("");
+        setRating(0);
+    } catch (err) {
+        console.log(err);
+    }
     };
     function renderStars(rating) {
         const stars = [];
@@ -131,16 +136,23 @@ export default function BookDetails() {
             </label>
 
             <div className="flex gap-1 mt-2">
-                {[1,2,3,4,5].map((star) => (
-                <button
+                {[1, 2, 3, 4, 5].map((star) => (
+                    <button
                     key={star}
+                    type="button"
                     onClick={() => setRating(star)}
-                    className={`text-2xl transition hover:cursor-pointer ${
-                    rating >= star ? "text-yellow-400" : "text-gray-300"
-                    }`}
-                >
-                    <StarBorderPurple500OutlinedIcon />
-                </button>
+                    className="hover:cursor-pointer"
+                    >
+                    {rating >= star ? (
+                        <StarOutlinedIcon
+                        sx={{ color: "#f5a623", fontSize: 26 }}
+                        />
+                    ) : (
+                        <StarBorderPurple500OutlinedIcon
+                        sx={{ color: "#ccc", fontSize: 26 }}
+                        />
+                    )}
+                    </button>
                 ))}
             </div>
             </div>
@@ -159,29 +171,43 @@ export default function BookDetails() {
         </div>
 
         <div className="mt-16 space-y-8">
-            <h2 className="text-lg font-semibold text-gray-900">
+        <h2 className="text-lg font-semibold text-gray-900">
             Customer Reviews
-            </h2>
-            {reviews.map((r) => (
+        </h2>
+
+        {reviews.length === 0 ? (
+            <p className="text-sm text-gray-500">
+            No reviews yet.
+            </p>
+        ) : (
+            reviews.map((r) => (
             <div key={r.id} className="flex gap-4">
                 <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm font-medium">
-                {r.name?.charAt(0) || "U"}
+                {r.name?.charAt(0)?.toUpperCase() || "U"}
                 </div>
+
                 <div className="flex-1">
                 <div className="flex items-center justify-between">
                     <p className="font-medium text-gray-900">
-                    {r.name || `User ${r.userId}`}
+                    {r.name || "User"}
                     </p>
-                    <div className="flex text-orange-400 text-sm">
-                     {renderStars(r.rating)}
+
+                    <div className="flex">
+                    {renderStars(r.rating)}
                     </div>
                 </div>
+
                 <p className="text-gray-600 text-sm mt-2 leading-relaxed">
                     {r.comment}
                 </p>
+
+                <p className="text-xs text-gray-400 mt-2">
+                    {new Date(r.created_at).toLocaleDateString()}
+                </p>
                 </div>
             </div>
-            ))}
+            ))
+        )}
         </div>
         </div>
     </div>

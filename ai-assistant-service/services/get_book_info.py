@@ -8,32 +8,37 @@ def get_book_info(title: str) -> str:
     Search for a book and return its details.
     Use this whenever the user asks about a book.
     """
-    res = requests.get(
-        f"{BACKEND_URL}/api/books"
+
+    books_response = requests.get(
+        f"{BACKEND_URL}/api/books/search",
+        params={
+            "title": title
+        },
+        timeout=5
     )
 
-    if res.status_code != 200:
-        return "I could not access the books database."
+    books_response.raise_for_status()
+    books = books_response.json()
 
-    books = res.json()
     book = next(
         (
             b for b in books
-            if title.lower() in b["title"].lower()
+            if title.strip().lower()
+            == b.get("title", "").strip().lower()
         ),
         None
     )
+
     if not book:
         return f"I could not find a book called {title}."
 
-
     return f"""
-BOOK FOUND:
+    BOOK FOUND:
 
-Title: {book.get('title')}
-Author: {book.get('authors')}
-Genre: {book.get('categories')}
-Price: {book.get('price')}
-Stock: {book.get('stock', 'unknown')}
-Description: {book.get('description')}
-"""
+    Title: {book.get('title')}
+    Author: {book.get('authors')}
+    Genre: {book.get('categories')}
+    Price: {book.get('price')}
+    Stock: {book.get('stock', 'unknown')}
+    Description: {book.get('description')}
+    """

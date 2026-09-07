@@ -7,7 +7,7 @@ import {
   getConversationMessages
 } from "../persistance/messages.js";
 
-export const chat = async ( userId, conversationId, message ) => {
+export const chat = async ( userId, conversationId, message, token ) => {
   if (!userId) {
     throw new Error("Missing user_id");
   }
@@ -49,7 +49,8 @@ export const chat = async ( userId, conversationId, message ) => {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        messages
+        messages,
+        token
       })
     }
   );

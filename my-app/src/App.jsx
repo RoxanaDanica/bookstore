@@ -1,7 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { CartProvider } from "react-use-cart";
+import { CartProvider } from "./context/CartContext";
 
 import Home from "./views/Home";
 import Administrator from "./views/Administrator";
@@ -46,21 +46,31 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
+  const [authReady, setAuthReady] = useState(false);
+
   useEffect(() => {
     async function initAuth() {
-      let token = localStorage.getItem("token");
+      try {
+        let token = localStorage.getItem("token");
 
-      if (!token) {
-        const res = await createGuest();
-
-        token = res.token;
-
-        localStorage.setItem("token", token);
+        if (!token) {
+          const res = await createGuest();
+          token = res.token;
+          localStorage.setItem("token", token);
+        }
+      } catch (err) {
+        console.error("Auth error:", err);
+      } finally {
+        setAuthReady(true);
       }
     }
 
     initAuth();
   }, []);
+
+  if (!authReady) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <CartProvider>
@@ -68,5 +78,4 @@ function App() {
     </CartProvider>
   );
 }
-
 export default App;

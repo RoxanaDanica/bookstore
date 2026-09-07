@@ -50,18 +50,18 @@ cartRouter.put("/items", authMiddleware, async (req, res) => {
 });
 
 cartRouter.delete("/items/:bookId", authMiddleware, async (req, res) => {
-    try {
-        const userId = req.user.id;
-        const bookId = Number(req.params.bookId);
-        await removeItemFromCart(userId,bookId);
-        res.json({
-            message: "Item removed successfully."
-        });
-    } catch (err) {
-        res.status(400).json({
-            error: err.message
-        });
-    }
+  try {
+    const userId = req.user.id;
+    const bookId = Number(req.params.bookId);
+
+    const cart = await removeItemFromCart(userId, bookId);
+
+    res.status(200).json(cart);
+  } catch (err) {
+    res.status(400).json({
+      error: err.message
+    });
+  }
 });
 
 cartRouter.post("/checkout", authMiddleware, async (req, res) => {

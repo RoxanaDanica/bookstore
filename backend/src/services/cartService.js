@@ -13,7 +13,8 @@ import {
 import { retrieveConnection } from "../persistance/db.js";
 
 
-export const addItemToCart = async ( userId, bookId, quantity ) => {
+
+export const addItemToCart = async (userId, bookId, quantity) => {
     await retrieveConnection().beginTransaction();
 
     try {
@@ -21,15 +22,27 @@ export const addItemToCart = async ( userId, bookId, quantity ) => {
         if (!cart) {
             cart = await createCart(userId);
         }
+
         const book = await lockBook(bookId);
+
         if (!book) {
             throw new Error("Book not found");
         }
 
         const reserved = await getReservedQuantity(bookId);
-        const existingItem = await findCartItem(cart.id, bookId);
-        const currentUserReservation = existingItem ? existingItem.quantity : 0;
-        const available = book.stock - reserved + currentUserReservation;
+
+        const existingItem = await findCartItem(
+            cart.id,
+            bookId
+        );
+
+        const currentUserReservation =
+            existingItem ? existingItem.quantity : 0;
+
+        const available =
+            book.stock -
+            reserved +
+            currentUserReservation;
 
         if (available < quantity) {
             throw new Error(
@@ -37,15 +50,21 @@ export const addItemToCart = async ( userId, bookId, quantity ) => {
             );
         }
 
-        const newQuantity = currentUserReservation + quantity;
+        const newQuantity =
+            currentUserReservation + quantity;
 
-        await upsertCartItem(cart.id,bookId,newQuantity);
+        await upsertCartItem(
+            cart.id,
+            bookId,
+            newQuantity
+        );
+
         await refreshCartExpiration(cart.id);
+
         await retrieveConnection().commit();
-        return {
-            cartId: cart.id,
-            quantity: newQuantity
-        };
+        const cartResult = await getCartItems(userId);
+        return cartResult;
+
     } catch (err) {
         await retrieveConnection().rollback();
         throw err;
@@ -102,12 +121,13 @@ export const updateCartItem = async (userId, bookId, quantity) => {
         if (!existingItem) {
             throw new Error("Book is not in the cart.");
         }
-        
+
         const book = await lockBook(bookId);
 
         if (!book) {
             throw new Error("Book not found.");
         }
+
         const reserved = await getReservedQuantity(bookId);
         const available = book.stock - reserved + existingItem.quantity;
 
@@ -117,28 +137,33 @@ export const updateCartItem = async (userId, bookId, quantity) => {
             );
         }
 
-        await updateCartItemQuantity(cart.id, bookId, quantity);
+        await updateCartItemQuantity( cart.id, bookId, quantity);
+
         await refreshCartExpiration(cart.id);
+
         await retrieveConnection().commit();
-        return await getCart(userId);
 
-    }
+        return await getCartItems(userId);
 
-    catch(err){
+    } catch (err) {
         await retrieveConnection().rollback();
         throw err;
     }
 };
-
 export const removeItemFromCart = async (userId, bookId) => {
     await retrieveConnection().beginTransaction();
+
     try {
         const cart = await findActiveCart(userId);
+
         if (!cart) {
             throw new Error("Cart not found.");
         }
 
-        const existingItem = await findCartItem(cart.id, bookId);
+        const existingItem = await findCartItem(
+            cart.id,
+            bookId
+        );
 
         if (!existingItem) {
             throw new Error("Book is not in the cart.");
@@ -146,11 +171,10 @@ export const removeItemFromCart = async (userId, bookId) => {
 
         await removeCartItem(cart.id, bookId);
         await refreshCartExpiration(cart.id);
+
         await retrieveConnection().commit();
 
-        return {
-            message: "Item removed from cart"
-        };
+        return await getCartItems(userId);
 
     } catch (err) {
         await retrieveConnection().rollback();

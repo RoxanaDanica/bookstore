@@ -10,9 +10,10 @@ import StarHalfIcon from '@mui/icons-material/StarHalf';
 
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { addCartItem } from "../api/cart";
+import { useCart } from "../context/CartContext";
 
 export default function BookCard({ item }) {
+  const { addToCart } = useCart();
   const navigate = useNavigate();
   const [addedMessage, setAddedMessage] = useState("");
 
@@ -115,21 +116,19 @@ export default function BookCard({ item }) {
             }}  
             onClick={async (e) => {
               e.stopPropagation();
-              try {
-                  await addCartItem(item.id, 1);
-                  setAddedMessage(`"${item.title}" has been added to the cart!`);
-                  setTimeout(() => {
-                      setAddedMessage("");
-                  }, 1500);
 
-              } catch (err) {
-                  console.error(err);
-                  setAddedMessage(`Could not add "${item.title}" to cart`);
-                  setTimeout(() => {
-                      setAddedMessage("");
-                  }, 1500);
+              const result = await addToCart(item.id, 1);
+
+              if (result.success) {
+                setAddedMessage(`"${item.title}" has been added to the cart!`);
+              } else {
+                setAddedMessage(result.error || `Could not add "${item.title}" to cart`);
               }
-          }}
+
+              setTimeout(() => {
+                setAddedMessage("");
+              }, 1500);
+            }}
 
         >
           Add to Cart

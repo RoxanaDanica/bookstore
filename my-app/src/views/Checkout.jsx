@@ -1,17 +1,24 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { size, z } from "zod";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { getCart, checkout } from "../api/cart";
 
-import LockIcon from '@mui/icons-material/Lock';
-import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import ThumbUpIcon from '@mui/icons-material/ThumbUp';
-import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
-import CreateOutlinedIcon from '@mui/icons-material/CreateOutlined';
-import CheckOutlinedIcon from '@mui/icons-material/CheckOutlined';
+import { checkout } from "../api/cart";
+import { useCart } from "../context/CartContext";
 
-const STEP = { PERSONAL: 1, SHIPPING: 2, PAYMENT: 3, SUCCESS: 4, };
+import LockIcon from "@mui/icons-material/Lock";
+import LocalShippingIcon from "@mui/icons-material/LocalShipping";
+import ThumbUpIcon from "@mui/icons-material/ThumbUp";
+import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
+import CheckOutlinedIcon from "@mui/icons-material/CheckOutlined";
+
+const STEP = {
+  PERSONAL: 1,
+  SHIPPING: 2,
+  PAYMENT: 3,
+  SUCCESS: 4,
+};
+
 const schema = z.object({
   fullName: z.string().min(2).max(60),
   street: z.string().min(3).max(100),
@@ -24,30 +31,57 @@ const schema = z.object({
     .regex(
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
       "Invalid email address"
-  ),
+    ),
 });
 
 export default function Checkout() {
-  const [cart,setCart] = useState(null);
-  const [loadingCart,setLoadingCart] = useState(true);
+  const {
+    cart,
+    setCart,
+    cartLoading,
+  } = useCart();
 
   const [step, setStep] = useState(STEP.PERSONAL);
   const [editStep, setEditStep] = useState(null);
   const [courier, setCourier] = useState("fan");
   const [loading, setLoading] = useState(false);
-  const [payment,setPayment] = useState("cash");
+  const [payment, setPayment] = useState("cash");
+  const [completedOrder, setCompletedOrder] = useState(null);
 
   const items = cart?.items || [];
-  const totalItems = cart?.totalItems || 0;
-  const cartTotal = cart?.cartTotal || 0;
+
+  const totalItems =
+    step === STEP.SUCCESS
+      ? completedOrder?.totalItems || 0
+      : cart?.totalItems || 0;
+
+  const cartTotal =
+    step === STEP.SUCCESS
+      ? completedOrder?.cartTotal || 0
+      : cart?.cartTotal || 0;
 
   const courierOptions = {
-    fan: { name: "Fan Courier", price: 5 },
-    dpd: { name: "DPD", price: 4 },
-    sameday: { name: "Sameday", price: 6 },
+    fan: {
+      name: "Fan Courier",
+      price: 5,
+    },
+    dpd: {
+      name: "DPD",
+      price: 4,
+    },
+    sameday: {
+      name: "Sameday",
+      price: 6,
+    },
   };
 
-  const shippingCost = courierOptions[courier].price;
+  const shippingCost =
+    step === STEP.SUCCESS
+      ? completedOrder?.shippingCost || 0
+      : courierOptions[courier].price;
+
+  const finalTotal = cartTotal + shippingCost;
+
   const {
     register,
     trigger,
@@ -60,10 +94,12 @@ export default function Checkout() {
   });
 
   const isEditing = (s) => editStep === s;
-  const email = watch("mail");
-  const fullName = watch("fullName");
-  const city = watch("city");
-  const street = watch("street");
+
+  const email =
+    step === STEP.SUCCESS
+      ? completedOrder?.email
+      : watch("mail");
+
   const goToStep = (s) => {
     setStep(s);
     setEditStep(null);
@@ -76,12 +112,18 @@ export default function Checkout() {
 
   const nextFromPersonal = async () => {
     const valid = await trigger();
-    if (valid) goToStep(STEP.SHIPPING);
+
+    if (valid) {
+      goToStep(STEP.SHIPPING);
+    }
   };
 
   const placeOrder = async () => {
+    if (loading) return;
+
+    setLoading(true);
+
     try {
-      setLoading(true);
       const response = await checkout({
         paymentMethod: payment,
         courier,
@@ -91,49 +133,58 @@ export default function Checkout() {
           city: getValues("city"),
           county: getValues("county"),
           country: getValues("country"),
-          email: getValues("mail")
-        }
+          email: getValues("mail"),
+        },
       });
-      console.log("Order created:", response.data.orderId);
+
+      setCompletedOrder({
+        orderId: response.data.orderId,
+        email: getValues("mail"),
+        items: [...items],
+        totalItems: cart?.totalItems || 0,
+        cartTotal: cart?.cartTotal || 0,
+        shippingCost: courierOptions[courier].price,
+      });
+
       setStep(STEP.SUCCESS);
-    }
-    catch(err){
-      alert(err.response?.data?.error || "Unable to place order");
-    }
-    finally{
+
+      setCart({
+        items: [],
+        totalItems: 0,
+        cartTotal: 0,
+      });
+    } catch (err) {
+      alert(
+        err.response?.data?.error ||
+          "Unable to place order"
+      );
+    } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    loadCart();
-  }, []);
-
-  const loadCart = async () => {
-    try {
-      setLoadingCart(true);
-      const response = await getCart();
-      setCart(response.data);
-    }
-    catch(err){
-      console.log(err);
-    }
-    finally{
-      setLoadingCart(false);
-    }
-  };
-
-  function Section({ title, stepId, children, summary }) {
+  function Section({
+    title,
+    stepId,
+    children,
+    summary,
+  }) {
     const active = step === stepId;
-    const readOnly = step > stepId && !isEditing(stepId);
+
+    const readOnly =
+      step > stepId &&
+      !isEditing(stepId);
+
     return (
       <div className="border border-[#e5e5e5] p-4 mb-4">
         <div className="flex justify-between items-center">
           <h1 className="font-['playfair'] text-[20px]">
             {title}
           </h1>
+
           {readOnly && (
             <button
+              type="button"
               onClick={() => startEdit(stepId)}
               className="hover:cursor-pointer"
             >
@@ -147,100 +198,242 @@ export default function Checkout() {
             {children}
           </div>
         )}
+
         {readOnly && summary}
       </div>
     );
   }
 
-  if(loadingCart){
+  if (cartLoading) {
     return <h2>Loading checkout...</h2>;
   }
-  if(!cart || cart.items.length === 0){
+
+  if (
+    step !== STEP.SUCCESS &&
+    (!cart || cart.items.length === 0)
+  ) {
     return <h2>Your cart is empty</h2>;
   }
+
   return (
     <div className="w-[1400px] mx-auto flex mt-[80px] mb-[80px]">
       <div className="w-[67%]">
         <Section
-          title={'1 Personal Information'}
-          stepId={STEP.PERSONAL}>
+          title="1 Personal Information"
+          stepId={STEP.PERSONAL}
+        >
           <div className="px-[40px] mt-[25px]">
             <div className="mb-[15px] flex flex-wrap">
-              <label htmlFor="name" className="font-[15px] font-['jost'] font-medium float-left w-[25%]">Full Name:</label>
-              <input id="name" className="border border-[#e5e5e5] p-2 w-[75%]" placeholder="Full Name" {...register("fullName")} />
-              <p className="basis-full text-red-500 ml-[25%] mt-1">{errors.fullName?.message}</p>
+              <label
+                htmlFor="name"
+                className="font-[15px] font-['jost'] font-medium float-left w-[25%]"
+              >
+                Full Name:
+              </label>
+
+              <input
+                id="name"
+                className="border border-[#e5e5e5] p-2 w-[75%]"
+                placeholder="Full Name"
+                {...register("fullName")}
+              />
+
+              <p className="basis-full text-red-500 ml-[25%] mt-1">
+                {errors.fullName?.message}
+              </p>
             </div>
 
             <div className="mb-[15px] flex flex-wrap">
-              <label htmlFor="mail" className="font-[15px] font-['jost'] font-medium float-left w-[25%]">Email:</label>
-              <input id="mail" className="border border-[#e5e5e5] p-2 w-[75%]" placeholder="Street" {...register("mail")} />
-              <p className="basis-full text-red-500 ml-[25%] mt-1">{errors.mail?.message}</p>
+              <label
+                htmlFor="mail"
+                className="font-[15px] font-['jost'] font-medium float-left w-[25%]"
+              >
+                Email:
+              </label>
+
+              <input
+                id="mail"
+                className="border border-[#e5e5e5] p-2 w-[75%]"
+                placeholder="Email"
+                {...register("mail")}
+              />
+
+              <p className="basis-full text-red-500 ml-[25%] mt-1">
+                {errors.mail?.message}
+              </p>
             </div>
 
             <div className="mb-[15px] flex flex-wrap">
-              <label htmlFor="street" className="font-[15px] font-['jost'] font-medium float-left w-[25%]">Street:</label>
-              <input id="street" className="border border-[#e5e5e5] p-2 w-[75%]" placeholder="Street" {...register("street")} />
-              <p className="basis-full text-red-500 ml-[25%] mt-1">{errors.street?.message}</p>
+              <label
+                htmlFor="street"
+                className="font-[15px] font-['jost'] font-medium float-left w-[25%]"
+              >
+                Street:
+              </label>
+
+              <input
+                id="street"
+                className="border border-[#e5e5e5] p-2 w-[75%]"
+                placeholder="Street"
+                {...register("street")}
+              />
+
+              <p className="basis-full text-red-500 ml-[25%] mt-1">
+                {errors.street?.message}
+              </p>
             </div>
 
             <div className="mb-[15px] flex flex-wrap">
-              <label htmlFor="city" className="font-[15px] font-['jost'] font-medium float-left w-[25%]">City:</label>
-              <input id="city" className="border border-[#e5e5e5] p-2 w-[75%]" placeholder="City" {...register("city")} />
-              <p className="basis-full text-red-500 ml-[25%] mt-1">{errors.city?.message}</p>
+              <label
+                htmlFor="city"
+                className="font-[15px] font-['jost'] font-medium float-left w-[25%]"
+              >
+                City:
+              </label>
+
+              <input
+                id="city"
+                className="border border-[#e5e5e5] p-2 w-[75%]"
+                placeholder="City"
+                {...register("city")}
+              />
+
+              <p className="basis-full text-red-500 ml-[25%] mt-1">
+                {errors.city?.message}
+              </p>
             </div>
 
             <div className="mb-[15px] flex flex-wrap">
-              <label htmlFor="county" className="font-[15px] font-['jost'] font-medium float-left w-[25%]">County:</label>  
-            <input id="county" className="border border-[#e5e5e5] p-2 w-[75%]" placeholder="County" {...register("county")} />
-            <p className="basis-full text-red-500 ml-[25%] mt-1">{errors.county?.message}</p>
+              <label
+                htmlFor="county"
+                className="font-[15px] font-['jost'] font-medium float-left w-[25%]"
+              >
+                County:
+              </label>
+
+              <input
+                id="county"
+                className="border border-[#e5e5e5] p-2 w-[75%]"
+                placeholder="County"
+                {...register("county")}
+              />
+
+              <p className="basis-full text-red-500 ml-[25%] mt-1">
+                {errors.county?.message}
+              </p>
             </div>
 
             <div className="mb-[15px] flex flex-wrap">
-              <label htmlFor="country" className="font-[15px] font-['jost'] font-medium float-left w-[25%]">Country:</label>
-              <input id="country" className="border border-[#e5e5e5] p-2 w-[75%]" placeholder="Country" {...register("country")} />
-              <p className="basis-full text-red-500 ml-[25%] mt-1">{errors.country?.message}</p>
+              <label
+                htmlFor="country"
+                className="font-[15px] font-['jost'] font-medium float-left w-[25%]"
+              >
+                Country:
+              </label>
+
+              <input
+                id="country"
+                className="border border-[#e5e5e5] p-2 w-[75%]"
+                placeholder="Country"
+                {...register("country")}
+              />
+
+              <p className="basis-full text-red-500 ml-[25%] mt-1">
+                {errors.country?.message}
+              </p>
             </div>
 
-           
             <div className="flow-root">
-               <button className="float-right px-[30px] py-[15px] bg-[#e52334] text-white hover:cursor-pointer" onClick={nextFromPersonal}>Continue</button>
+              <button
+                type="button"
+                className="float-right px-[30px] py-[15px] bg-[#e52334] text-white hover:cursor-pointer"
+                onClick={nextFromPersonal}
+              >
+                Continue
+              </button>
             </div>
           </div>
         </Section>
-        
+
         <Section
-          title={'2 Shipping Method'}
-          stepId={STEP.SHIPPING}>
+          title="2 Shipping Method"
+          stepId={STEP.SHIPPING}
+        >
           <div className="px-[40px] mt-[25px]">
-            {Object.entries(courierOptions).map(([key, value]) => (
-              <div key={key} className="border border-[#e5e5e5] my-[10px] py-[15px] flow-root">
-                <input
-                      className="float-left w-[8%] text-red hover:cursor-pointer"
-                      type="radio"
-                      checked={courier === key}
-                      onChange={() => setCourier(key)}/>
-                <div className="flex flex-row justify-between w-[92%]">
-                  <LocalShippingOutlinedIcon   sx={{ fontSize: "40px", background: "#e6e6e6", fontWeight: "200", padding: "7px", margin: "0 10px"}} />
-                  <label key={key} className="block w-[33%] font-['jost'] font-medium">{value.name}</label>
-                  <div className="w-[33%] font-['jost'] font-medium">{value.price}$</div>
-                  <div className="w-[33%] font-['jost'] font-medium">Delivery next day!</div>
+            {Object.entries(courierOptions).map(
+              ([key, value]) => (
+                <div
+                  key={key}
+                  className="border border-[#e5e5e5] my-[10px] py-[15px] flow-root"
+                >
+                  <input
+                    className="float-left w-[8%] text-red hover:cursor-pointer"
+                    type="radio"
+                    checked={courier === key}
+                    onChange={() => setCourier(key)}
+                  />
+
+                  <div className="flex flex-row justify-between w-[92%]">
+                    <LocalShippingOutlinedIcon
+                      sx={{
+                        fontSize: "40px",
+                        background: "#e6e6e6",
+                        fontWeight: "200",
+                        padding: "7px",
+                        margin: "0 10px",
+                      }}
+                    />
+
+                    <label className="block w-[33%] font-['jost'] font-medium">
+                      {value.name}
+                    </label>
+
+                    <div className="w-[33%] font-['jost'] font-medium">
+                      {value.price}$
+                    </div>
+
+                    <div className="w-[33%] font-['jost'] font-medium">
+                      Delivery next day!
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            )}
+
             <div className="mb-[15px]">
-              <label className="font-medium font-[15px] font-['jost']" htmlFor="delivery_message">If you would like to add a comment about your order, please write it in the field below.</label>
-              <textarea className="w-full border border-black" rows="2" cols="120" id="delivery_message" name="delivery_message"></textarea>
+              <label
+                className="font-medium font-[15px] font-['jost']"
+                htmlFor="delivery_message"
+              >
+                If you would like to add a comment about your order,
+                please write it in the field below.
+              </label>
+
+              <textarea
+                className="w-full border border-black"
+                rows="2"
+                cols="120"
+                id="delivery_message"
+                name="delivery_message"
+              />
             </div>
 
             <div className="flow-root">
-               <button className="float-right px-[30px] py-[15px] bg-[#e52334] text-white hover:cursor-pointer" onClick={() => goToStep(STEP.PAYMENT)}>Continue</button>
+              <button
+                type="button"
+                className="float-right px-[30px] py-[15px] bg-[#e52334] text-white hover:cursor-pointer"
+                onClick={() => goToStep(STEP.PAYMENT)}
+              >
+                Continue
+              </button>
             </div>
           </div>
         </Section>
 
         <Section
           title="3 Payment"
-          stepId={STEP.PAYMENT}>
+          stepId={STEP.PAYMENT}
+        >
           <div className="mt-[20px]">
             <label className="flex items-center gap-[10px] mb-[15px] cursor-pointer">
               <input
@@ -257,7 +450,6 @@ export default function Checkout() {
               </span>
             </label>
 
-
             <label className="flex items-center gap-[10px] mb-[15px] cursor-pointer">
               <input
                 type="radio"
@@ -273,7 +465,6 @@ export default function Checkout() {
               </span>
             </label>
 
-
             <label className="flex items-center gap-[10px] mb-[15px] cursor-pointer">
               <input
                 type="radio"
@@ -285,67 +476,138 @@ export default function Checkout() {
               />
 
               <span className="font-['Jost'] font-medium">
-                Pay by bank_transfer
+                Pay by Bank Transfer
               </span>
             </label>
-
           </div>
 
-            <div className="flow-root">
-               <button className="float-right px-[30px] py-[15px] bg-[#e52334] text-white hover:cursor-pointer" disabled={loading} onClick={placeOrder}>{loading ? "Processing..." : "Place Order"}</button>
-            </div>
+          <div className="flow-root">
+            <button
+              type="button"
+              disabled={loading}
+              onClick={placeOrder}
+              className="float-right px-[30px] py-[15px] bg-[#e52334] text-white hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? "Processing..." : "Place Order"}
+            </button>
+          </div>
         </Section>
 
         {step === STEP.SUCCESS && (
           <div className="border border-[#e5e5e5] p-4 mb-4">
             <div className="flex gap-[7px] mb-[7px]">
-              <CheckOutlinedIcon sx={{ color: "#4cbb6c" }}/>
-              <h2 className="font-medium font-['playfair'] font-[18px]">Your order is confirmed </h2>
+              <CheckOutlinedIcon
+                sx={{ color: "#4cbb6c" }}
+              />
+
+              <h2 className="font-medium font-['playfair'] font-[18px]">
+                Your order is confirmed
+              </h2>
             </div>
-            <p className="font-[15px] font-['jost'] font-normal">An email has been sent to the {email} address.</p>
+
+            <p className="font-[15px] font-['jost'] font-normal">
+              An email has been sent to the {email} address.
+            </p>
+
+            {completedOrder?.orderId && (
+              <p className="font-[15px] font-['jost'] mt-[10px]">
+                Order ID:{" "}
+                <strong>
+                  {completedOrder.orderId}
+                </strong>
+              </p>
+            )}
           </div>
         )}
       </div>
 
       <div className="w-[33%] ml-[30px]">
         <div className="w-full p-[10px] relative block mb-5 bg-white border border-[#e5e5e5] h-fit">
-              <div className="p-[20px]">
-                <div className="flex flex-row justify-between mb-[15px]">
-                  <p className="font-semibold">{totalItems} items</p>
-                  <p className="font-semibold text-[#e52334]">{cartTotal.toFixed(2)} $</p>
-                </div>
-                <div className="flex flex-row justify-between mb-[15px]">
-                  <p className="font-semibold">Shipping:</p>
-                  <p className="font-semibold text-[#e52334]">0.00 $</p>
-                </div>
-              </div>
-              <div className="p-[20px]"> 
-                <div className="flex flex-row justify-between mb-[15px]">
-                  <p className="font-semibold">Total (tax excl.) </p>
-                  <p className="font-semibold text-[#e52334]">{cartTotal.toFixed(2)} $</p>
-                </div>
-                <div className="flex flex-row justify-between mb-[15px]">
-                  <p className="font-semibold">Taxes: </p>
-                  <p className="font-semibold text-[#e52334]">$0.00</p>
-                </div>
-              </div>
-          </div>
+          <div className="p-[20px]">
+            <div className="flex flex-row justify-between mb-[15px]">
+              <p className="font-semibold">
+                {totalItems} items
+              </p>
 
-          <div className="mt-[5px] w-full border-[3px] border-dashed border-[#efefef] py-[11px] px-[30px] mb-[15px]">
-            <div className="flex flex-row gap-[10px] mb-[15px]">
-              <LockIcon sx={{ color: '#e52334', fontSize: '25px' }} />
-              <p className="text-gray-600 font-['Jost',serif] text-[#000000] font-semibold font-[15px]">Security policy</p>
+              <p className="font-semibold text-[#e52334]">
+                {cartTotal.toFixed(2)} $
+              </p>
             </div>
-            <div className="flex flex-row gap-[10px] mb-[15px]">
-              <LocalShippingIcon sx={{ color: '#e52334', fontSize: '25px' }} />
-              <p className=" text-gray-600 font-['Jost',serif] text-[#000000] font-semibold font-[15px]">Delivery policy</p>
-            </div>
-            <div className="flex flex-row gap-[10px] mb-[15px]">
-              <ThumbUpIcon sx={{ color: '#e52334', fontSize: '25px' }} />
-              <p className="text-gray-600 font-['Jost',serif] text-[#000000] font-semibold font-[15px]">Return policy</p>
+
+            <div className="flex flex-row justify-between mb-[15px]">
+              <p className="font-semibold">
+                Shipping:
+              </p>
+
+              <p className="font-semibold text-[#e52334]">
+                {shippingCost.toFixed(2)} $
+              </p>
             </div>
           </div>
 
+          <div className="p-[20px]">
+            <div className="flex flex-row justify-between mb-[15px]">
+              <p className="font-semibold">
+                Total (tax excl.)
+              </p>
+
+              <p className="font-semibold text-[#e52334]">
+                {finalTotal.toFixed(2)} $
+              </p>
+            </div>
+
+            <div className="flex flex-row justify-between mb-[15px]">
+              <p className="font-semibold">
+                Taxes:
+              </p>
+
+              <p className="font-semibold text-[#e52334]">
+                $0.00
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-[5px] w-full border-[3px] border-dashed border-[#efefef] py-[11px] px-[30px] mb-[15px]">
+          <div className="flex flex-row gap-[10px] mb-[15px]">
+            <LockIcon
+              sx={{
+                color: "#e52334",
+                fontSize: "25px",
+              }}
+            />
+
+            <p className="text-gray-600 font-['Jost',serif] text-[#000000] font-semibold font-[15px]">
+              Security policy
+            </p>
+          </div>
+
+          <div className="flex flex-row gap-[10px] mb-[15px]">
+            <LocalShippingIcon
+              sx={{
+                color: "#e52334",
+                fontSize: "25px",
+              }}
+            />
+
+            <p className="text-gray-600 font-['Jost',serif] text-[#000000] font-semibold font-[15px]">
+              Delivery policy
+            </p>
+          </div>
+
+          <div className="flex flex-row gap-[10px] mb-[15px]">
+            <ThumbUpIcon
+              sx={{
+                color: "#e52334",
+                fontSize: "25px",
+              }}
+            />
+
+            <p className="text-gray-600 font-['Jost',serif] text-[#000000] font-semibold font-[15px]">
+              Return policy
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ import Administrator from "./views/Administrator";
 import Cart from "./components/Cart";
 import Checkout from "./views/Checkout";
 import BookDetails from "./views/BookDetails";
+import Formular from "./views/Formular";
 import { createGuest } from "./api/auth";
 
 import MainLayout from "./components/Layout";
@@ -40,7 +41,15 @@ const router = createBrowserRouter([
       {
         path: "/reviews",
         element: <BookDetails />
-      }
+      },
+      {
+        path: "/formular",
+        element: <Formular />,
+      },
+      {
+        path: "/formular/:bookId",
+        element: <Formular />,
+      },
     ],
   },
 ]);

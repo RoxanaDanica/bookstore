@@ -105,213 +105,282 @@ export default function Cart() {
   }
 
   if (items.length === 0) {
-      return (
-      <div className="min-h-[60vh] flex items-center justify-center px-4">
-        <div className="w-full max-w-[520px] text-center border border-[#e5e5e5] bg-white px-8 py-12 shadow-sm">
-          <div className="w-[80px] h-[80px] mx-auto mb-6 rounded-full bg-[#f8f8f8] flex items-center justify-center">
-            <span className="text-[38px]"><ShoppingCartIcon titleAccess="Cart" sx={{ color: "black" }} /></span>
+    return (
+      <section className="min-h-[70vh] bg-[#f8f6f2] px-6 py-20">
+        <div className="mx-auto flex max-w-[1400px] justify-center">
+          <div className="w-full max-w-[560px] rounded-3xl border border-[#e5dfd7] bg-white px-10 py-16 text-center shadow-[0_12px_40px_rgba(0,0,0,0.05)]">
+            <div className="mx-auto flex h-[86px] w-[86px] items-center justify-center rounded-full bg-[#f3f0ea] text-[#b5202d]">
+              <ShoppingCartIcon sx={{ fontSize: 38 }} />
+            </div>
+
+            <span className="mt-8 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-[#b5202d]">
+              Your cart
+            </span>
+
+            <h2 className="mt-3 font-['Playfair'] text-[34px] font-bold text-[#171717]">
+              Your cart is empty
+            </h2>
+
+            <p className="mx-auto mt-4 max-w-[400px] text-[15px] leading-7 text-[#77716b]">
+              You haven't added any books yet. Explore the collection and find
+              something worth reading.
+            </p>
+
+            <button
+              onClick={() => navigate("/")}
+              className="mt-8 bg-[#171717] px-8 py-4 text-sm font-semibold text-white transition hover:bg-[#b5202d]"
+            >
+              Continue Shopping
+            </button>
           </div>
-
-          <h2 className="font-['playfair'] text-[30px] font-semibold mb-3">
-            Your cart is empty
-          </h2>
-
-          <p className="font-['jost'] text-[16px] text-gray-500 mb-8">
-            Looks like you haven't added any books to your cart yet.
-          </p>
-
-          <a
-            href="/"
-            className="inline-block bg-[#e52334] text-white font-['jost'] font-medium px-8 py-3 transition hover:opacity-90"
-          >
-            Continue Shopping
-          </a>
         </div>
-      </div>
+      </section>
     );
   }
 
-  return (
-    <div className="flex flex-row w-[1400px] mx-auto">
-      <SidebarFilters
-        className="w-[18%]"
-        books={books}
-        filters={filters}
-        setFilters={setFilters}
-      />
+return (
+  <section className="min-h-screen bg-[#f8f6f2] py-16">
+    <div className="mx-auto max-w-[1400px] px-6">
+      <div className="mb-10">
+        <span className="text-sm font-semibold uppercase tracking-[0.22em] text-[#b5202d]">
+          Your selection
+        </span>
 
-      <div className="w-[82%] flex flex-row gap-[30px]">
-        <div className="w-[67%] p-[10px]">
-          <h2 className="text-2xl font-semibold mb-5">
-            Shopping Cart
-          </h2>
+        <h1 className="mt-3 font-['Playfair'] text-[44px] font-bold text-[#171717]">
+          Shopping Cart
+        </h1>
 
-          {items.map((item) => (
-            <div
-              key={item.book_id}
-              className="flex items-center justify-between border border-[#e5e5e5] bg-white p-5 mb-4"
-            >
-              <div className="flex gap-4 items-center w-[60%]">
-                <img
-                  src={item.thumbnail}
-                  alt={item.title}
-                  className="w-[80px] h-[94px] object-cover"
-                />
+        <p className="mt-3 text-[15px] text-[#77716b]">
+          Review your books and continue when you're ready.
+        </p>
+      </div>
 
-                <div>
-                  <h4 className="font-semibold text-lg">
-                    {item.title}
-                  </h4>
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[240px_1fr]">
+        <aside className="h-fit rounded-2xl border border-[#e5dfd7] bg-white p-5">
+          <SidebarFilters
+            books={books}
+            filters={filters}
+            setFilters={setFilters}
+          />
+        </aside>
 
-                  <p className="text-[#e52334] font-medium">
-                    {item.price} $
+        <div className="grid grid-cols-1 gap-8 xl:grid-cols-[1fr_360px]">
+          <div className="space-y-4">
+            {items.map((item) => (
+              <div
+                key={item.book_id}
+                className="
+                  group flex flex-col gap-5 rounded-2xl
+                  border border-[#e7e2db] bg-white p-5
+                  transition-all duration-300
+                  hover:-translate-y-[2px]
+                  hover:shadow-[0_12px_30px_rgba(0,0,0,0.06)]
+                  md:flex-row md:items-center md:justify-between
+                "
+              >
+                <div className="flex min-w-0 items-center gap-5">
+                  <div className="flex h-[130px] w-[100px] flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#f3f0ea] p-2">
+                    <img
+                      src={item.thumbnail}
+                      alt={item.title}
+                      className="h-full w-full object-contain"
+                    />
+                  </div>
+
+                  <div className="min-w-0">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#9b958f]">
+                      {item.categories}
+                    </p>
+
+                    <h3 className="max-w-[420px] font-['Playfair'] text-[21px] font-semibold leading-snug text-[#171717]">
+                      {item.title}
+                    </h3>
+
+                    {item.authors && (
+                      <p className="mt-2 text-sm text-[#77716b]">
+                        by {item.authors}
+                      </p>
+                    )}
+
+                    <p className="mt-3 text-[17px] font-semibold text-[#b5202d]">
+                      ${Number(item.price).toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-5 md:flex-nowrap">
+                  <div className="flex h-11 items-center overflow-hidden rounded-full border border-[#ddd7d0] bg-[#faf8f5]">
+                    <button
+                      onClick={() => handleDecrease(item)}
+                      disabled={item.quantity <= 1}
+                      className="
+                        flex h-full w-11 items-center justify-center
+                        text-lg text-[#171717]
+                        transition hover:bg-[#eee9e2]
+                        disabled:cursor-not-allowed disabled:opacity-30
+                      "
+                    >
+                      −
+                    </button>
+
+                    <span className="min-w-[42px] text-center text-sm font-semibold">
+                      {item.quantity}
+                    </span>
+
+                    <button
+                      onClick={() => handleIncrease(item)}
+                      className="
+                        flex h-full w-11 items-center justify-center
+                        text-lg text-[#171717]
+                        transition hover:bg-[#eee9e2]
+                      "
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  <p className="min-w-[90px] text-right text-[17px] font-semibold text-[#171717]">
+                    ${(Number(item.price) * item.quantity).toFixed(2)}
                   </p>
 
-                  <p className="text-[#000000] font-light font-['Jost',serif]">
-                    {item.authors}
-                  </p>
-
-                  <p className="text-[#000000] font-light font-['Jost',serif]">
-                    {item.categories}
-                  </p>
+                  <button
+                    onClick={() => handleDelete(item)}
+                    className="
+                      flex h-10 w-10 items-center justify-center
+                      rounded-full text-[#8c8680]
+                      transition
+                      hover:bg-[#f7e9e9]
+                      hover:text-[#b5202d]
+                    "
+                  >
+                    <DeleteIcon sx={{ fontSize: 20 }} />
+                  </button>
                 </div>
               </div>
+            ))}
+          </div>
 
-              <div className="flex items-center gap-6">
-                <div className="flex items-center border border-[#e5e5e5]">
-                  <button
-                    className="px-3 py-2 hover:cursor-pointer"
-                    onClick={() => handleDecrease(item)}
-                    disabled={item.quantity <= 1}
-                  >
-                    -
-                  </button>
+          <div className="h-fit xl:sticky xl:top-[110px]">
+            <div className="rounded-2xl border border-[#e5dfd7] bg-white p-7 shadow-[0_10px_30px_rgba(0,0,0,0.04)]">
+              <h2 className="font-['Playfair'] text-[28px] font-semibold text-[#171717]">
+                Order Summary
+              </h2>
 
-                  <span className="px-4">
-                    {item.quantity}
+              <div className="mt-7 space-y-4 border-b border-[#ece7e1] pb-6">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-[#77716b]">
+                    Items ({cart.totalItems})
                   </span>
 
-                  <button
-                    className="px-3 py-2 hover:cursor-pointer"
-                    onClick={() => handleIncrease(item)}
-                  >
-                    +
-                  </button>
+                  <span className="font-medium text-[#171717]">
+                    ${cart.cartTotal.toFixed(2)}
+                  </span>
                 </div>
 
-                <p className="font-semibold min-w-[80px] text-right">
-                  {(item.price * item.quantity).toFixed(2)} $
-                </p>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-[#77716b]">
+                    Shipping
+                  </span>
 
-                <button
-                  onClick={() => handleDelete(item)}
-                  className="text-red-600 hover:text-red-800 hover:cursor-pointer"
-                >
-                  <DeleteIcon
-                    sx={{
-                      color: "#878787",
-                    }}
-                  />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+                  <span className="text-sm font-semibold text-[#4e7b5b]">
+                    Free
+                  </span>
+                </div>
 
-        <div className="w-[33%]">
-          <div className="w-full p-[10px] relative block mb-5 bg-white border border-[#e5e5e5] h-fit">
-            <div className="p-[20px]">
-              <div className="flex flex-row justify-between mb-[15px]">
-                <p className="font-semibold">
-                  {cart.totalItems} items
-                </p>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-[#77716b]">
+                    Taxes
+                  </span>
 
-                <p className="font-semibold text-[#e52334]">
-                  {cart.cartTotal.toFixed(2)} $
-                </p>
+                  <span className="font-medium text-[#171717]">
+                    $0.00
+                  </span>
+                </div>
               </div>
 
-              <div className="flex flex-row justify-between mb-[15px]">
-                <p className="font-semibold">
-                  Shipping:
-                </p>
+              <div className="flex items-end justify-between py-6">
+                <div>
+                  <p className="text-sm text-[#77716b]">
+                    Total
+                  </p>
 
-                <p className="font-semibold text-[#e52334]">
-                  0.00 $
-                </p>
-              </div>
-            </div>
+                  <p className="mt-1 text-xs text-[#aaa49d]">
+                    Tax excluded
+                  </p>
+                </div>
 
-            <div className="p-[20px]">
-              <div className="flex flex-row justify-between mb-[15px]">
-                <p className="font-semibold">
-                  Total (tax excl.)
-                </p>
-
-                <p className="font-semibold text-[#e52334]">
-                  {cart.cartTotal.toFixed(2)} $
+                <p className="font-['Playfair'] text-[28px] font-bold text-[#171717]">
+                  ${cart.cartTotal.toFixed(2)}
                 </p>
               </div>
 
-              <div className="flex flex-row justify-between mb-[15px]">
-                <p className="font-semibold">
-                  Taxes:
-                </p>
-
-                <p className="font-semibold text-[#e52334]">
-                  $0.00
-                </p>
-              </div>
-            </div>
-
-            <div className="p-[20px]">
               <button
                 onClick={openAuthPanel}
-                className="w-full bg-[#e52334] text-white py-[15px] uppercase font-medium hover:cursor-pointer"
+                className="
+                  w-full rounded-xl bg-[#171717] py-4
+                  text-sm font-semibold uppercase tracking-[0.08em]
+                  text-white transition duration-300
+                  hover:bg-[#b5202d]
+                "
               >
                 Go to Checkout
               </button>
-            </div>
-          </div>
 
-          <div className="mt-[5px] w-full border-[3px] border-dashed border-[#efefef] py-[11px] px-[30px] mb-[15px]">
-            <div className="flex flex-row gap-[10px] mb-[15px]">
-              <LockIcon
-                sx={{
-                  color: "#e52334",
-                  fontSize: "25px",
-                }}
-              />
-
-              <p className="text-gray-600 font-['Jost',serif] text-[#000000] font-semibold font-[15px]">
-                Security policy
+              <p className="mt-4 text-center text-xs leading-5 text-[#9b958f]">
+                Secure checkout. Your cart is reserved while you complete your order.
               </p>
             </div>
 
-            <div className="flex flex-row gap-[10px] mb-[15px]">
-              <LocalShippingIcon
-                sx={{
-                  color: "#e52334",
-                  fontSize: "25px",
-                }}
-              />
+            <div className="mt-5 rounded-2xl border border-[#e5dfd7] bg-[#f3f0ea] p-6">
+              <div className="space-y-5">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#b5202d]">
+                    <LockIcon sx={{ fontSize: 20 }} />
+                  </div>
 
-              <p className="text-gray-600 font-['Jost',serif] text-[#000000] font-semibold font-[15px]">
-                Delivery policy
-              </p>
-            </div>
+                  <div>
+                    <p className="text-sm font-semibold text-[#171717]">
+                      Secure checkout
+                    </p>
 
-            <div className="flex flex-row gap-[10px] mb-[15px]">
-              <ThumbUpIcon
-                sx={{
-                  color: "#e52334",
-                  fontSize: "25px",
-                }}
-              />
+                    <p className="mt-1 text-xs text-[#77716b]">
+                      Your information is protected.
+                    </p>
+                  </div>
+                </div>
 
-              <p className="text-gray-600 font-['Jost',serif] text-[#000000] font-semibold font-[15px]">
-                Return policy
-              </p>
+                <div className="flex items-center gap-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#b5202d]">
+                    <LocalShippingIcon sx={{ fontSize: 20 }} />
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-semibold text-[#171717]">
+                      Reliable delivery
+                    </p>
+
+                    <p className="mt-1 text-xs text-[#77716b]">
+                      Fast and carefully handled shipping.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#b5202d]">
+                    <ThumbUpIcon sx={{ fontSize: 20 }} />
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-semibold text-[#171717]">
+                      Easy returns
+                    </p>
+
+                    <p className="mt-1 text-xs text-[#77716b]">
+                      Simple return policy if needed.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -323,5 +392,6 @@ export default function Cart() {
         onSuccess={handleAuthSuccess}
       />
     </div>
-  );
+  </section>
+);
 }

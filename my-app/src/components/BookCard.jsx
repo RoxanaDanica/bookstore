@@ -1,12 +1,10 @@
 import Card from "@mui/joy/Card";
 import CardContent from "@mui/joy/CardContent";
-import CardActions from "@mui/joy/CardActions";
-import AspectRatio from "@mui/joy/AspectRatio";
 import Typography from "@mui/joy/Typography";
 import Button from "@mui/material/Button";
-import StarRateIcon from '@mui/icons-material/StarRate';
-import StarBorderIcon from '@mui/icons-material/StarBorder';
-import StarHalfIcon from '@mui/icons-material/StarHalf';
+
+import StarRateRoundedIcon from "@mui/icons-material/StarRateRounded";
+import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
 
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -15,136 +13,235 @@ import { useCart } from "../context/CartContext";
 export default function BookCard({ item }) {
   const { addToCart } = useCart();
   const navigate = useNavigate();
+
   const [addedMessage, setAddedMessage] = useState("");
 
-  function renderStars(ratings_count) {
-    const stars = [];
+  const rating = Number(item.rating) || 0;
 
-    for (let i = 1; i <= 5; i++) {
-      if (ratings_count >= i) {
-        stars.push(<StarRateIcon key={i} sx={{ color: 'black' }} />);
-      } else if (ratings_count >= i - 0.5) {
-        stars.push(<StarHalfIcon key={i} sx={{ color: 'black' }} />);
-      } else {
-        stars.push(<StarBorderIcon key={i} sx={{ color: 'black' }} />);
-      }
+  const handleAddToCart = async (e) => {
+    e.stopPropagation();
+
+    const result = await addToCart(item.id, 1);
+
+    if (result.success) {
+      setAddedMessage("Added to cart");
+    } else {
+      setAddedMessage(
+        result.error || "Unable to add book"
+      );
     }
 
-    return stars;
-  }
+    setTimeout(() => {
+      setAddedMessage("");
+    }, 1500);
+  };
 
   return (
     <Card
-        onClick={() => navigate(`/books/${item.id}`)}
-        orientation="vertical"
-        size="md"
-        variant="soft"
-        sx={{
-        
-        bgcolor: 'transparent',
-        position: 'relative',
-        overflow: 'hidden',
-        cursor: 'pointer',
+      onClick={() => navigate(`/books/${item.id}`)}
+      variant="plain"
+      sx={{
+        width: "100%",
+        bgcolor: "transparent",
+        boxShadow: "none",
+        borderRadius: 0,
+        p: 0,
+        cursor: "pointer",
+        overflow: "visible",
 
-        '& .add-to-cart-btn': {
-            opacity: 0,
-            transform: 'translateY(-60px)',
-            transition: 'all 0.5s ease',
+        "&:hover .book-image": {
+          transform: "scale(1.04)",
         },
 
-        '&:hover .add-to-cart-btn': {
-            opacity: 1,
-            transform: 'translateY(0)',
+        "&:hover .cart-button": {
+          opacity: 1,
+          transform: "translateY(0)",
         },
-        }}
+      }}
     >
-      <CardContent>
-        <AspectRatio      
-            ratio={256 / 300}
-            sx={{
-                width: 256,
-                height: 300,
-                bgcolor: '#f7f7f7',
-            }}>
-          <img  style={{
-            width: '100%',
-            paddingTop: '20px',
-            paddingBottom: '20px',
-            height: '100%',
-            objectFit: 'contain',
-        }}src={item.thumbnail} />
-        </AspectRatio>
+      <div
+        style={{
+          position: "relative",
+          backgroundColor: "#f3f0ea",
+          borderRadius: "18px",
+          overflow: "hidden",
+          height: "340px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <img
+          src={item.thumbnail}
+          alt={item.title}
+          className="book-image"
+          style={{
+            width: "75%",
+            height: "85%",
+            objectFit: "contain",
+            transition: "transform 0.35s ease",
+          }}
+        />
 
-        <Typography  level="title-lg" sx= {{ fontFamily: '"Playfair Display", serif', display: 'flex', justifyContent: 'center', paddingTop: '20px', marginTop: '10px', marginBottom: '10px' }}>
+        <Button
+          className="cart-button"
+          onClick={handleAddToCart}
+          startIcon={
+            <ShoppingBagOutlinedIcon
+              sx={{ fontSize: 18 }}
+            />
+          }
+          sx={{
+            position: "absolute",
+            left: "20px",
+            right: "20px",
+            bottom: "18px",
+            opacity: 0,
+            transform: "translateY(12px)",
+            transition: "all 0.3s ease",
+
+            bgcolor: "#171717",
+            color: "#fff",
+
+            py: 1.4,
+
+            borderRadius: "10px",
+
+            fontFamily: '"Jost", sans-serif',
+            fontSize: "13px",
+            fontWeight: 600,
+            letterSpacing: "0.04em",
+            textTransform: "none",
+
+            "&:hover": {
+              bgcolor: "#b5202d",
+            },
+          }}
+        >
+          Add to cart
+        </Button>
+      </div>
+
+      <CardContent
+        sx={{
+          p: 0,
+          pt: 2.2,
+        }}
+      >
+        {item.authors && (
+          <Typography
+            sx={{
+              fontFamily: '"Jost", sans-serif',
+              fontSize: "13px",
+              color: "#8a8580",
+              mb: 0.7,
+
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {item.authors}
+          </Typography>
+        )}
+
+        <Typography
+          sx={{
+            fontFamily:
+              '"Playfair Display", serif',
+
+            fontSize: "19px",
+            fontWeight: 600,
+            lineHeight: 1.35,
+
+            color: "#171717",
+
+            minHeight: "52px",
+
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+          }}
+        >
           {item.title}
         </Typography>
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px', marginTop: '10px' }}>
-            {renderStars(item.rating)}
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            marginTop: "12px",
+          }}
+        >
+          <StarRateRoundedIcon
+            sx={{
+              fontSize: 18,
+              color: "#d8a536",
+            }}
+          />
+
+          <Typography
+            sx={{
+              fontFamily: '"Jost", sans-serif',
+              fontSize: "14px",
+              fontWeight: 500,
+              color: "#444",
+            }}
+          >
+            {rating > 0
+              ? rating.toFixed(1)
+              : "No ratings"}
+          </Typography>
+
+          {item.ratings_count > 0 && (
+            <Typography
+              sx={{
+                fontFamily:
+                  '"Jost", sans-serif',
+                fontSize: "13px",
+                color: "#999",
+              }}
+            >
+              ({item.ratings_count})
+            </Typography>
+          )}
         </div>
 
-        <Typography level="title-lg" sx={{ marginTop: '10px', marginBottom: '10px', display: 'flex', justifyContent: 'center', color: '#e52334', fontSize: '18px', fontWeight: '500', fontFamily: '"Jost", serif' }}>
-          {item.price} $
-        </Typography>
-
-      </CardContent>
-
-      <CardActions        
-        sx={{
-            justifyContent: 'center',
-            '& > .MuiButton-root': {
-            flex: 'none !important',
-            width: 'auto !important',
-            },
-        }}>
-        <Button
-            className="add-to-cart-btn"
-            variant="contained"
-            sx={{
-            padding: '15px 30px',
-            fontSize: '14px',
-            lineHeight: '20px',
-            backgroundColor: '#e52334',
-            color: '#ffffff',
-            fontFamily: '"Jost", sans-serif',
-            textTransform: 'uppercase',
-            verticalAlign: 'middle',
-            flex: 'none',
-            borderRadius: '0',
-            outline: 'none',
-            width: 'auto',
-            letterSpacing: '0.5px',
-            }}  
-            onClick={async (e) => {
-              e.stopPropagation();
-
-              const result = await addToCart(item.id, 1);
-
-              if (result.success) {
-                setAddedMessage(`"${item.title}" has been added to the cart!`);
-              } else {
-                setAddedMessage(result.error || `Could not add "${item.title}" to cart`);
-              }
-
-              setTimeout(() => {
-                setAddedMessage("");
-              }, 1500);
-            }}
-
+        <div
+          style={{
+            marginTop: "14px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
         >
-          Add to Cart
-        </Button>
-      </CardActions>
-      {addedMessage && (
           <Typography
-              sx={{
-                  textAlign: "center",
-                  color: "#e52334",
-                  marginTop: "10px"
-              }}
+            sx={{
+              fontFamily: '"Jost", sans-serif',
+              fontSize: "18px",
+              fontWeight: 600,
+              color: "#b5202d",
+            }}
           >
-              {addedMessage}
+            ${Number(item.price).toFixed(2)}
           </Typography>
-      )}
+        </div>
+
+        {addedMessage && (
+          <Typography
+            sx={{
+              mt: 1.2,
+              fontFamily: '"Jost", sans-serif',
+              fontSize: "13px",
+              color: "#b5202d",
+            }}
+          >
+            {addedMessage}
+          </Typography>
+        )}
+      </CardContent>
     </Card>
   );
 }

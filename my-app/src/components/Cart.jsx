@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { jwtDecode } from "jwt-decode";
-import { useCart } from "../context/CartContext";
+import { useCart } from "../contexts/CartContext";
 
 import SidebarFilters from "./SidebarFilters";
 import LockIcon from "@mui/icons-material/Lock";

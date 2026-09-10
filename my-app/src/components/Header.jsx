@@ -6,7 +6,7 @@ import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import MenuBookRoundedIcon from "@mui/icons-material/MenuBookRounded";
 
-import { useCart } from "../context/CartContext";
+import { useCart } from "../contexts/CartContext";
 
 function Header() {
   const navigate = useNavigate();
@@ -18,6 +18,13 @@ function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
 
   const totalItems = cart?.totalItems || 0;
+  const categories = [
+    "Fiction",
+    "Adventure stories",
+    "American fiction",
+    "Christian life",
+    "Detective and mystery stories",
+  ];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -91,40 +98,15 @@ function Header() {
         </Link>
 
         <nav className="hidden items-center gap-8 lg:flex">
-          <Link
-            to="/"
-            className="text-sm font-medium text-[#171717] transition hover:text-[#b5202d]"
-          >
-            Home
-          </Link>
-
-          <Link
-            to="/?genre=Romance"
-            className="text-sm font-medium text-[#171717] transition hover:text-[#b5202d]"
-          >
-            Romance
-          </Link>
-
-          <Link
-            to="/?genre=Thriller"
-            className="text-sm font-medium text-[#171717] transition hover:text-[#b5202d]"
-          >
-            Thriller
-          </Link>
-
-          <Link
-            to="/?genre=SciFi"
-            className="text-sm font-medium text-[#171717] transition hover:text-[#b5202d]"
-          >
-            Sci-Fi
-          </Link>
-
-          <Link
-            to="/?genre=Fantasy"
-            className="text-sm font-medium text-[#171717] transition hover:text-[#b5202d]"
-          >
-            Fantasy
-          </Link>
+          {categories.map((category) => (
+            <Link
+              key={category}
+              to={`/books/category/${encodeURIComponent(category)}`}
+              className="text-sm font-medium text-[#171717] transition hover:text-[#b5202d]"
+            >
+              {category}
+            </Link>
+          ))}
         </nav>
 
         <div className="flex items-center gap-3">

@@ -17,9 +17,9 @@ function Administrator() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    getBooks().then((response) => {
-      setBooks(response.data);
-      console.log("BOOKS:", response.data);
+    getBooks(10000, 1).then((response) => {
+      setBooks(response.data.books);
+      setTotalBooks(response.data.total);
     });
   }, []);
 

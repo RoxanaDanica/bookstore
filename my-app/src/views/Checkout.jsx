@@ -4,7 +4,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { checkout } from "../api/cart";
-import { useCart } from "../context/CartContext";
+import { useCart } from "../contexts/CartContext";
 
 import LockIcon from "@mui/icons-material/Lock";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";

@@ -8,7 +8,7 @@ import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
 
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { useCart } from "../context/CartContext";
+import { useCart } from "../contexts/CartContext";
 
 export default function BookCard({ item }) {
   const { addToCart } = useCart();
@@ -66,9 +66,12 @@ export default function BookCard({ item }) {
           borderRadius: "18px",
           overflow: "hidden",
           height: "340px",
+          width: "100%",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
+          padding: "24px",
+          boxSizing: "border-box",
         }}
       >
         <img
@@ -76,10 +79,13 @@ export default function BookCard({ item }) {
           alt={item.title}
           className="book-image"
           style={{
-            width: "75%",
-            height: "85%",
+            maxWidth: "82%",
+            maxHeight: "285px",
+            width: "auto",
+            height: "auto",
             objectFit: "contain",
             transition: "transform 0.35s ease",
+            display: "block",
           }}
         />
 

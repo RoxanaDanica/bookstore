@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getReviews, addReview, getBook } from "../api/books";
-import { useCart } from "../context/CartContext";
+import { useCart } from "../contexts/CartContext";
 
 import StarBorderRoundedIcon from "@mui/icons-material/StarBorderRounded";
 import StarRoundedIcon from "@mui/icons-material/StarRounded";

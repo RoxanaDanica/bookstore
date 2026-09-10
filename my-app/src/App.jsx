@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { CartProvider } from "./context/CartContext";
+import { CartProvider } from "./contexts/CartContext";
 
 import Home from "./views/Home";
 import Administrator from "./views/Administrator";
@@ -9,6 +9,8 @@ import Cart from "./components/Cart";
 import Checkout from "./views/Checkout";
 import BookDetails from "./views/BookDetails";
 import Formular from "./views/Formular";
+import BookCollection from "./views/BookCollection";
+import Categories from "./views/Categories";
 import { createGuest } from "./api/auth";
 
 import MainLayout from "./components/Layout";
@@ -36,11 +38,11 @@ const router = createBrowserRouter([
       },
       {
         path: "/books/:id",
-        element: <BookDetails />
+        element: <BookDetails />,
       },
       {
         path: "/reviews",
-        element: <BookDetails />
+        element: <BookDetails />,
       },
       {
         path: "/formular",
@@ -49,6 +51,18 @@ const router = createBrowserRouter([
       {
         path: "/formular/:bookId",
         element: <Formular />,
+      },
+      {
+        path: "/books/featured",
+        element: <BookCollection type="featured" />,
+      },
+      {
+        path: "/books/category/:category",
+        element: <BookCollection type="category" />,
+      },
+      {
+        path: "/categories",
+        element: <Categories />,
       },
     ],
   },

@@ -1,22 +1,66 @@
 import { getAxiosInstance } from "./axios";
-const getBooks = (limit, page, filters = {}) => {
 
-  let url = `/books?limit=${limit}&page=${page}`;
+const getBooks = (
+  limit = 20,
+  page = 1,
+  filters = {},
+  signal
+) => {
+  const params = new URLSearchParams();
 
-  if(filters.search){
-    url += `&search=${filters.search}`;
+  params.append("limit", limit);
+  params.append("page", page);
+
+  if (filters.search?.trim()) {
+    params.append("search", filters.search.trim());
   }
 
-  if(filters.genre){
-    url += `&genre=${filters.genre}`;
+  if (Array.isArray(filters.genre)) {
+    filters.genre.forEach((genre) => {
+      if (genre?.trim()) {
+        params.append("genre", genre.trim());
+      }
+    });
   }
 
-  if(filters.author){
-    url += `&author=${filters.author}`;
+  if (Array.isArray(filters.author)) {
+    filters.author.forEach((author) => {
+      if (author?.trim()) {
+        params.append("author", author.trim());
+      }
+    });
   }
 
+  if (
+    filters.minPrice !== "" &&
+    filters.minPrice !== undefined &&
+    filters.minPrice !== null
+  ) {
+    params.append("minPrice", filters.minPrice);
+  }
 
-  return getAxiosInstance().get(url);
+  if (
+    filters.maxPrice !== "" &&
+    filters.maxPrice !== undefined &&
+    filters.maxPrice !== null
+  ) {
+    params.append("maxPrice", filters.maxPrice);
+  }
+
+  return getAxiosInstance().get("/books", {
+    params,
+    signal,
+  });
+};
+
+const getFilterGenres = async () => {
+  const response = await getAxiosInstance().get("/books/genres");
+  return response.data;
+};
+
+const getAuthors = async () => {
+  const response = await getAxiosInstance().get("/books/authors");
+  return response.data;
 };
 
 const getBook = async (id) => {
@@ -25,22 +69,21 @@ const getBook = async (id) => {
 };
 
 const getBooksCategories = async () => {
-  const response = await getAxiosInstance().get('/books/categories');
+  const response = await getAxiosInstance().get("/books/categories");
   return response.data;
-}
-const deleteBook = async (id) => {
-  const data = await getAxiosInstance().delete(`/books/${id}`) ;
-  return data;
-}
-const updateBook = async (id, book) => {
-  const data = await getAxiosInstance().put(`/books/${id}`, book);
-  return data;
+};
 
-}
+const deleteBook = async (id) => {
+  return getAxiosInstance().delete(`/books/${id}`);
+};
+
+const updateBook = async (id, book) => {
+  return getAxiosInstance().put(`/books/${id}`, book);
+};
+
 const addBook = async (book) => {
-  const data = await getAxiosInstance().post('/books', book);
-  return data;
-}
+  return getAxiosInstance().post("/books", book);
+};
 
 const getReviews = async (bookId) => {
   const response = await getAxiosInstance().get(`/reviews/${bookId}`);
@@ -52,13 +95,25 @@ const addReview = async (review) => {
   return response.data;
 };
 
-const getTopRatedBooks = async () => {
-  const response = await getAxiosInstance().get('/books/top-rated');
+const getTopRatedBooks = async (
+  limit = 20,
+  page = 1
+) => {
+  const response = await getAxiosInstance().get(
+    "/books/top-rated",
+    {
+      params: {
+        limit,
+        page,
+      },
+    }
+  );
+
   return response.data;
 };
 
-export { 
-  getBooks, 
+export {
+  getBooks,
   getBook,
   deleteBook,
   updateBook,
@@ -66,5 +121,7 @@ export {
   getReviews,
   addReview,
   getBooksCategories,
-  getTopRatedBooks
+  getTopRatedBooks,
+  getAuthors,
+  getFilterGenres,
 };

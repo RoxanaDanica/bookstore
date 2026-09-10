@@ -7,42 +7,48 @@ import {
   editBook,
   retriveBooksCategories,
   retriveTopRatedBooks,
-  searchBooks
+  searchBooks,
+  retriveGenres,
+  retriveAuthors,
 } from "../services/booksService.js";
 
 const booksRouter = express.Router();
 
 booksRouter.get("/", async (req, res) => {
   try {
-    const page = Number(req.query.page) || 0;
-    const limit = Number(req.query.limit) || 20;
+    const page = Math.max(Number(req.query.page) || 1, 1);
+    const limit = Math.max(Number(req.query.limit) || 20, 1);
 
-    const filters = {
-      search: req.query.search || "",
-      genre: req.query.genre || "",
-      author: req.query.author || "",
-      minPrice: req.query.minPrice || null,
-      maxPrice: req.query.maxPrice || null,
-    };
+    const offset = (page - 1) * limit;
+    console.log("REQ QUERY:", req.query);
 
-    const offset = page * limit;
-
-    const books = await retriveBooks(
+    const result = await retriveBooks(
       limit,
       offset,
-      filters
+      {
+        search: req.query.search,
+        genre: req.query.genre,
+        author: req.query.author,
+        minPrice: req.query.minPrice,
+        maxPrice: req.query.maxPrice,
+      }
     );
 
-    res.status(200).json(books);
+    res.status(200).json({
+      books: result.books,
+      page,
+      limit,
+      total: result.total,
+      totalPages: Math.ceil(result.total / limit),
+    });
   } catch (err) {
     console.log("BACKEND ERROR:", err);
 
     res.status(500).json({
-      error: err.message
+      error: err.message,
     });
   }
 });
-
 
 booksRouter.get("/search", async (req, res) => {
   try {
@@ -66,6 +72,34 @@ booksRouter.get("/search", async (req, res) => {
   }
 });
 
+booksRouter.get("/genres", async (req, res) => {
+  try {
+    const genres = await retriveGenres();
+
+    res.status(200).json(genres);
+  } catch (err) {
+    console.log("GENRES ERROR:", err);
+
+    res.status(500).json({
+      error: err.message,
+    });
+  }
+});
+
+booksRouter.get("/authors", async (req, res) => {
+  try {
+    const authors = await retriveAuthors();
+
+    res.status(200).json(authors);
+  } catch (err) {
+    console.log("AUTHORS ERROR:", err);
+
+    res.status(500).json({
+      error: err.message,
+    });
+  }
+});
+
 
 booksRouter.get("/categories", async (req, res) => {
   const bookCategories =
@@ -74,24 +108,25 @@ booksRouter.get("/categories", async (req, res) => {
   res.send(bookCategories);
 });
 
-
 booksRouter.get("/top-rated", async (req, res) => {
   try {
-    const books = await retriveTopRatedBooks();
+    const limit = Number(req.query.limit) || 20;
+    const page = Number(req.query.page) || 1;
 
-    res.status(200).json(books);
-  } catch (error) {
-    console.error(
-      "TOP RATED ERROR:",
-      error
+    const result = await retriveTopRatedBooks(
+      limit,
+      page
     );
 
+    res.json(result);
+  } catch (error) {
+    console.error(error);
+
     res.status(500).json({
-      error: error.message
+      error: "Could not get top rated books",
     });
   }
 });
-
 
 booksRouter.get("/:id", async (req, res) => {
   const { id } = req.params;
@@ -118,18 +153,6 @@ booksRouter.post('/', async(req, res) => {
     }
 })
 
-booksRouter.put('/:id', async(req, res)=> { 
-    const id = req.params.id;
-    const modifyBook = {...req.body};
-    try {
-        validateBookPayload(modifyBook);
-        const book = await editBook(id, modifyBook);
-        res.send(200);
-    } catch (error) {
-        res.send(error.message);
-    }
-})
-
 booksRouter.get('/stock/:id', async (req, res) => {
     const { id } = req.params;
 
@@ -143,5 +166,17 @@ booksRouter.get('/stock/:id', async (req, res) => {
         stock: book[0].stock || 0
     });
 });
+
+booksRouter.put('/:id', async(req, res)=> { 
+    const id = req.params.id;
+    const modifyBook = {...req.body};
+    try {
+        validateBookPayload(modifyBook);
+        const book = await editBook(id, modifyBook);
+        res.send(200);
+    } catch (error) {
+        res.send(error.message);
+    }
+})
 
 export default booksRouter; 

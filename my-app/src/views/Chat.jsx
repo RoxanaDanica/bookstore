@@ -1,5 +1,15 @@
-import { useState, useEffect, useRef } from "react";
-import { sendChatMessage, getConversation, startConversation } from "../api/chat";
+import {
+  useState,
+  useEffect,
+  useRef
+} from "react";
+
+import {
+  sendChatMessage,
+  getConversation,
+  startConversation
+} from "../api/chat";
+
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 
 export default function Chat({ onClose }) {
@@ -17,10 +27,14 @@ export default function Chat({ onClose }) {
         const res = await getConversation();
 
         setMessages(res.data.messages ?? []);
-        setConversationId(res.data.conversation_id ?? null);
+        setConversationId(
+          res.data.conversation_id ?? null
+        );
       } catch (err) {
-        console.error("Could not load conversation", err);
-
+        console.error(
+          "Could not load conversation",
+          err
+        );
       } finally {
         setLoading(false);
       }
@@ -31,82 +45,107 @@ export default function Chat({ onClose }) {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({
-      behavior: "smooth",
+      behavior: "smooth"
     });
   }, [messages, thinking]);
 
   const handleNewConversation = async () => {
-  try {
-    const res = await startConversation();
+    try {
+      const res = await startConversation();
 
-    setConversationId(res.data.conversation_id);
-    setMessages([]);
-  } catch (err) {
-    console.error("Could not start conversation", err);
-  }
-};
+      setConversationId(
+        res.data.conversation_id
+      );
 
-const sendMessage = async () => {
-  const message = input.trim();
+      setMessages([]);
+      setInput("");
+    } catch (err) {
+      console.error(
+        "Could not start conversation",
+        err
+      );
+    }
+  };
 
-  if (!message || thinking) return;
+  const sendMessage = async () => {
+    const message = input.trim();
 
-  setThinking(true);
-
-  try {
-    let activeConversationId = conversationId;
-
-    if (!activeConversationId) {
-      const startRes = await startConversation();
-
-      activeConversationId = startRes.data.conversation_id;
-      setConversationId(activeConversationId);
+    if (!message || thinking) {
+      return;
     }
 
-    setMessages((prev) => [
-      ...prev,
-      {
-        role: "user",
-        text: message,
-      },
-    ]);
+    setThinking(true);
 
-    setInput("");
+    try {
+      let activeConversationId =
+        conversationId;
 
-    const res = await sendChatMessage({
-      message,
-      conversation_id: activeConversationId,
-    });
+      if (!activeConversationId) {
+        const startRes =
+          await startConversation();
 
-    setMessages((prev) => [
-      ...prev,
-      {
-        role: "assistant",
-        text: res.data.reply,
-      },
-    ]);
-  } catch (err) {
-    console.error(err);
+        activeConversationId =
+          startRes.data.conversation_id;
 
-    setMessages((prev) => [
-      ...prev,
-      {
-        role: "assistant",
-        text: "AI service error",
-      },
-    ]);
-  } finally {
-    setThinking(false);
-  }
-};
+        setConversationId(
+          activeConversationId
+        );
+      }
 
-  if (loading) {
-    return (
-      <div className="h-[500px] flex items-center justify-center">
-        Loading conversation...
-      </div>
-    );
-  }
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "user",
+          text: message
+        }
+      ]);
+
+      setInput("");
+
+      const res = await sendChatMessage({
+        message,
+        conversation_id:
+          activeConversationId
+      });
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          text: res.data.reply
+        }
+      ]);
+
+      const actions =
+        res.data.actions ?? [];
+
+      const cartUpdated = actions.some(
+        (action) =>
+          action.type === "cart_updated"
+      );
+
+      if (cartUpdated) {
+        window.dispatchEvent(
+          new CustomEvent("cart-updated")
+        );
+      }
+    } catch (err) {
+      console.error(
+        "Chat error:",
+        err
+      );
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          text: "AI service error"
+        }
+      ]);
+    } finally {
+      setThinking(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -131,12 +170,13 @@ const sendMessage = async () => {
           </p>
 
           <p className="mt-0.5 text-xs text-[#96908a]">
-            Your personal book asistant.
+            Your personal book assistant.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
+            type="button"
             onClick={handleNewConversation}
             className="
               rounded-full border border-[#ded8d1]
@@ -158,58 +198,79 @@ const sendMessage = async () => {
               flex h-9 w-9 items-center justify-center
               rounded-full text-[#77716b]
               transition
+              hover:cursor-pointer
               hover:bg-[#f3f0ea]
               hover:text-[#171717]
-              hover:cursor-pointer
             "
           >
-            <CloseRoundedIcon sx={{ fontSize: 21 }} />
+            <CloseRoundedIcon
+              sx={{ fontSize: 21 }}
+            />
           </button>
         </div>
       </div>
 
       <div className="flex-1 space-y-4 overflow-y-auto bg-[#faf8f5] px-4 py-5">
-        {messages.length === 0 && !thinking && (
-          <div className="flex h-full items-center justify-center">
-            <div className="max-w-[280px] text-center">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#efe9df]">
-                <span className="font-['Playfair'] text-lg font-semibold text-[#b5202d]">
-                  Ivy
-                </span>
+        {messages.length === 0 &&
+          !thinking && (
+            <div className="flex h-full items-center justify-center">
+              <div className="max-w-[280px] text-center">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#efe9df]">
+                  <span className="font-['Playfair'] text-lg font-semibold text-[#b5202d]">
+                    Ivy
+                  </span>
+                </div>
+
+                <h3 className="font-['Playfair'] text-[20px] font-semibold text-[#171717]">
+                  Looking for your next
+                  read?
+                </h3>
+
+                <p className="mt-2 text-sm leading-6 text-[#8b8580]">
+                  Tell Ivy what you're in
+                  the mood for and she'll
+                  help you find the right
+                  book.
+                </p>
               </div>
-
-              <h3 className="font-['Playfair'] text-[20px] font-semibold text-[#171717]">
-                Looking for your next read?
-              </h3>
-
-              <p className="mt-2 text-sm leading-6 text-[#8b8580]">
-                Tell Ivy what you're in the mood for and she'll help you find the right book.
-              </p>
             </div>
-          </div>
-        )}
+          )}
 
-        {messages.map((m, i) => (
+        {messages.map((message, index) => (
           <div
-            key={i}
+            key={index}
             className={`flex ${
-              m.role === "user"
+              message.role === "user"
                 ? "justify-end"
                 : "justify-start"
             }`}
           >
             <div
               className={`
-                max-w-[78%] px-4 py-3
+                max-w-[78%]
+                px-4 py-3
                 text-sm leading-6
                 ${
-                  m.role === "user"
-                    ? "rounded-2xl rounded-br-md bg-[#171717] text-white"
-                    : "rounded-2xl rounded-bl-md border border-[#e5dfd7] bg-white text-[#3d3935] shadow-[0_4px_14px_rgba(0,0,0,0.03)]"
+                  message.role === "user"
+                    ? `
+                      rounded-2xl
+                      rounded-br-md
+                      bg-[#171717]
+                      text-white
+                    `
+                    : `
+                      rounded-2xl
+                      rounded-bl-md
+                      border
+                      border-[#e5dfd7]
+                      bg-white
+                      text-[#3d3935]
+                      shadow-[0_4px_14px_rgba(0,0,0,0.03)]
+                    `
                 }
               `}
             >
-              {m.text}
+              {message.text}
             </div>
           </div>
         ))}
@@ -218,7 +279,9 @@ const sendMessage = async () => {
           <div className="flex justify-start">
             <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md border border-[#e5dfd7] bg-white px-4 py-3 shadow-[0_4px_14px_rgba(0,0,0,0.03)]">
               <span className="h-2 w-2 animate-bounce rounded-full bg-[#9b958f] [animation-delay:-0.2s]" />
+
               <span className="h-2 w-2 animate-bounce rounded-full bg-[#9b958f] [animation-delay:-0.1s]" />
+
               <span className="h-2 w-2 animate-bounce rounded-full bg-[#9b958f]" />
             </div>
           </div>
@@ -231,17 +294,28 @@ const sendMessage = async () => {
         <div className="flex items-end gap-2 rounded-2xl border border-[#ded8d1] bg-[#faf9f7] p-2 transition focus-within:border-[#b5202d] focus-within:bg-white">
           <textarea
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) =>
+              setInput(e.target.value)
+            }
             onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
+              if (
+                e.key === "Enter" &&
+                !e.shiftKey
+              ) {
                 e.preventDefault();
                 sendMessage();
               }
             }}
             className="
-              max-h-[110px] min-h-[42px] flex-1
-              resize-none bg-transparent
-              px-2 py-2 text-sm leading-5
+              max-h-[110px]
+              min-h-[42px]
+              flex-1
+              resize-none
+              bg-transparent
+              px-2
+              py-2
+              text-sm
+              leading-5
               text-[#171717]
               outline-none
               placeholder:text-[#aaa49d]
@@ -251,12 +325,22 @@ const sendMessage = async () => {
           />
 
           <button
+            type="button"
             onClick={sendMessage}
-            disabled={thinking || !input.trim()}
+            disabled={
+              thinking ||
+              !input.trim()
+            }
             className="
-              flex h-10 items-center justify-center
-              rounded-xl bg-[#171717]
-              px-4 text-sm font-semibold text-white
+              flex h-10
+              items-center
+              justify-center
+              rounded-xl
+              bg-[#171717]
+              px-4
+              text-sm
+              font-semibold
+              text-white
               transition
               hover:bg-[#b5202d]
               disabled:cursor-not-allowed
@@ -268,7 +352,9 @@ const sendMessage = async () => {
         </div>
 
         <p className="mt-2 px-1 text-[11px] text-[#aaa49d]">
-            Ask for help with book recommendations, stock, details, or reviews.
+          Ask for help with book
+          recommendations, stock, details,
+          or reviews.
         </p>
       </div>
     </div>

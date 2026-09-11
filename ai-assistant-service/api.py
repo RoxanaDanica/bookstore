@@ -1,8 +1,14 @@
+import json
+
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
+
+from langchain_core.messages import ToolMessage
+
 from agent import agent
-from services.review_context import set_token, clear_token
+from services.auth_context import set_token, clear_token
+
 
 app = FastAPI()
 
@@ -34,10 +40,38 @@ def chat_endpoint(req: ChatRequest):
             "messages": messages
         })
 
-        answer = response["messages"][-1].content
+        response_messages = response["messages"]
+
+        answer = response_messages[-1].content
+
+        actions = []
+
+        for message in response_messages:
+            if not isinstance(message, ToolMessage):
+                continue
+
+            if message.name != "add_book_to_cart":
+                continue
+
+            try:
+                tool_result = json.loads(
+                    message.content
+                )
+            except (json.JSONDecodeError, TypeError):
+                continue
+
+            if (
+                tool_result.get("success") is True
+                and tool_result.get("action")
+                == "cart_updated"
+            ):
+                actions.append({
+                    "type": "cart_updated"
+                })
 
         return {
-            "response": answer
+            "response": answer,
+            "actions": actions
         }
 
     finally:

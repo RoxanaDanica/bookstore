@@ -35,6 +35,7 @@ def get_book_info(title: str) -> str:
     return f"""
     BOOK FOUND:
 
+    Book ID: {book.get('id')}
     Title: {book.get('title')}
     Author: {book.get('authors')}
     Genre: {book.get('categories')}

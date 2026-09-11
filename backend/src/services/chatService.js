@@ -7,7 +7,12 @@ import {
   getConversationMessages
 } from "../persistance/messages.js";
 
-export const chat = async ( userId, conversationId, message, token ) => {
+export const chat = async (
+  userId,
+  conversationId,
+  message,
+  token
+) => {
   if (!userId) {
     throw new Error("Missing user_id");
   }
@@ -40,7 +45,6 @@ export const chat = async ( userId, conversationId, message, token ) => {
     content: item.content
   }));
 
-
   const response = await fetch(
     "http://host.docker.internal:8000/chat",
     {
@@ -56,7 +60,16 @@ export const chat = async ( userId, conversationId, message, token ) => {
   );
 
   const data = await response.json();
-  const answer = data.response ?? "AI did not return a response";
+
+  const answer =
+    data.response ??
+    "AI did not return a response";
+
+  const actions =
+    Array.isArray(data.actions)
+      ? data.actions
+      : [];
+
   await createMessage(
     conversationId,
     "assistant",
@@ -65,12 +78,13 @@ export const chat = async ( userId, conversationId, message, token ) => {
 
   return {
     reply: answer,
+    actions,
     conversation_id: conversationId
   };
 };
 
 export const getConversation = async ( userId, conversationId ) => {
-  console.log("GET CONVERSATION id", conversationId);
+
   if (!userId) {
     throw new Error("Missing user_id");
   }
@@ -79,8 +93,6 @@ export const getConversation = async ( userId, conversationId ) => {
     userId,
     conversationId
   );
-
-  console.log("FOUND CONVERSATION:", conversation);
 
   if (!conversation) {
     return {
@@ -99,12 +111,13 @@ export const getConversation = async ( userId, conversationId ) => {
   };
 };
 
-export const startConversation = async (userId) => {
+export const startConversation = async (userId ) => {
   if (!userId) {
     throw new Error("Missing user_id");
   }
 
-  const conversation = await createConversation(userId);
+  const conversation =
+    await createConversation(userId);
 
   return {
     conversation_id: conversation.id

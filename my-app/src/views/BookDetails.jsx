@@ -11,6 +11,7 @@ import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import AutoStoriesOutlinedIcon from "@mui/icons-material/AutoStoriesOutlined";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
+import BackButton from "../components/BackButton";
 
 export default function BookDetails() {
     const { id } = useParams();
@@ -141,6 +142,11 @@ if (!book) {
 return (
   <main className="bg-[#f8f6f2]">
     <section className="mx-auto max-w-[1400px] px-6 py-14 lg:py-20">
+      <BackButton
+        label="Back to books"
+        className="mb-10 lg:mb-12"
+      />
+
       <div className="grid grid-cols-1 gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
         
         <div>

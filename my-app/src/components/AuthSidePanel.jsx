@@ -78,6 +78,7 @@ export default function AuthSidePanel({ open, onClose, onSuccess }) {
               text-[#77716b] transition
               hover:bg-[#e4ded6]
               hover:text-[#171717]
+              hover:cursor-pointer
             "
           >
             <CloseRoundedIcon sx={{ fontSize: 21 }} />

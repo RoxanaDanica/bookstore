@@ -1,5 +1,6 @@
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useState
@@ -15,48 +16,60 @@ import {
 const CartContext = createContext(null);
 
 export const CartProvider = ({ children }) => {
-    const [cart, setCart] = useState({
+  const [cart, setCart] = useState({
     items: [],
     totalItems: 0,
     cartTotal: 0
-    });
+  });
 
-    const [cartLoading, setCartLoading] = useState(true);
+  const [cartLoading, setCartLoading] = useState(true);
 
-    const loadCart = async () => {
-        try {
-            setCartLoading(true);
-            const response = await getCart();
-            setCart(response.data);
-        } catch (err) {
-            console.error("LOAD CART ERROR:", err);
-
-            setCart({
-            items: [],
-            totalItems: 0,
-            cartTotal: 0
-            });
-        } finally {
-            setCartLoading(false);
-        }
-    };
-
-    const addToCart = async (bookId, quantity = 1) => {
+  const loadCart = useCallback(async () => {
     try {
-        const response = await addCartItem(bookId, quantity);
+      setCartLoading(true);
 
-        setCart(response.data);
+      const response = await getCart();
 
-        return { success: true };
+      setCart(response.data);
     } catch (err) {
-        return {
+      console.error(
+        err
+      );
+
+      setCart({
+        items: [],
+        totalItems: 0,
+        cartTotal: 0
+      });
+    } finally {
+      setCartLoading(false);
+    }
+  }, []);
+
+  const addToCart = async (
+    bookId,
+    quantity = 1
+  ) => {
+    try {
+      const response = await addCartItem(
+        bookId,
+        quantity
+      );
+
+      setCart(response.data);
+
+      return {
+        success: true
+      };
+    } catch (err) {
+      return {
         success: false,
         error:
-            err.response?.data?.error ||
-            "Unable to add item."
-        };
+          err.response?.data?.error ||
+          "Unable to add item."
+      };
     }
-    };
+  };
 
   const increaseQuantity = async (item) => {
     try {
@@ -84,7 +97,8 @@ export const CartProvider = ({ children }) => {
     if (item.quantity <= 1) {
       return {
         success: false,
-        error: "Quantity cannot be lower than 1."
+        error:
+          "Quantity cannot be lower than 1."
       };
     }
 
@@ -109,45 +123,63 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-    const deleteItem = async (item) => {
-        try {
-            const response = await removeCartItem(item.book_id);
+  const deleteItem = async (item) => {
+    try {
+      const response = await removeCartItem(
+        item.book_id
+      );
 
-            console.log("DELETE RESPONSE:", response.data);
+      setCart(response.data);
 
-            setCart(response.data);
-
-            return {
-            success: true
-            };
-        } catch (err) {
-            return {
-            success: false,
-            error:
-                err.response?.data?.error ||
-                "Unable to remove item."
-            };
-        }
-    };
+      return {
+        success: true
+      };
+    } catch (err) {
+      return {
+        success: false,
+        error:
+          err.response?.data?.error ||
+          "Unable to remove item."
+      };
+    }
+  };
 
   useEffect(() => {
     loadCart();
-  }, []);
+  }, [loadCart]);
+
+  useEffect(() => {
+    const handleCartUpdated = () => {
+      loadCart();
+    };
+
+    window.addEventListener(
+      "cart-updated",
+      handleCartUpdated
+    );
+
+    return () => {
+      window.removeEventListener(
+        "cart-updated",
+        handleCartUpdated
+      );
+    };
+  }, [loadCart]);
 
   return (
     <CartContext.Provider
-        value={{
-            cart,
-            cartLoading,
-            loadCart,
-            addToCart,
-            increaseQuantity,
-            decreaseQuantity,
-            deleteItem,
-            setCart
-        }}
+      value={{
+        cart,
+        cartLoading,
+        loadCart,
+        addToCart,
+        increaseQuantity,
+        decreaseQuantity,
+        deleteItem,
+        setCart
+      }}
     >
-    {children}
+      {children}
     </CartContext.Provider>
   );
 };

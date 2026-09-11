@@ -3,6 +3,8 @@ from langchain.agents import create_agent
 from services.get_book_info import get_book_info
 from services.submit_book_review import give_review
 from services.check_book_stock import check_stock
+from services.add_book_to_cart import add_book_to_cart
+
 
 model = ChatOllama(model="qwen2.5")
 
@@ -13,6 +15,7 @@ agent = create_agent(
         get_book_info,
         give_review,
         check_stock,
+        add_book_to_cart,
     ],
     system_prompt="""
     You are a friendly bookstore assistant.
@@ -33,6 +36,15 @@ agent = create_agent(
     - Only call give_review after the user explicitly confirms that they want to post or submit it.
     - If the user says "yes", "post it", "submit it", or clearly confirms, use the most recently discussed book and the most recently proposed review.
     - Only call give_review after the user explicitly confirms their intent.
+
+    Add book to cart rules:
+    - Only add a book to the cart when the user clearly asks to add it.
+    - Before calling add_book_to_cart, make sure you know the correct book ID.
+    - If the user gives only a title, use get_book_info first to identify the book and obtain its ID.
+    - Use quantity 1 unless the user explicitly requests another quantity.
+    - After successfully adding a book, tell the user that it was added to their cart.
+    - Use only real book IDs from the bookstore database when calling add_book_to_cart.
+    - If you fail to find a book ID, inform the user that you cannot add it to the cart.
 
     Use previous conversation context.
     If the user asks a follow-up question like "price", "stock", or "reviews",

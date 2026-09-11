@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import { getBooks } from "../api/books";
 
-const useBooks = () => {
+const useBooks = (initialFilters = {}) => {
   const [books, setBooks] = useState([]);
 
   const [filters, setFilters] = useState({
-    search: "",
-    genre: [],
-    author: [],
-    minPrice: "",
-    maxPrice: "",
+    search: initialFilters.search || "",
+    genre: initialFilters.genre || [],
+    author: initialFilters.author || [],
+    minPrice: initialFilters.minPrice || "",
+    maxPrice: initialFilters.maxPrice || "",
   });
 
   const [page, setPage] = useState(1);

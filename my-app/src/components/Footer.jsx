@@ -1,180 +1,257 @@
 import { Link } from "react-router-dom";
 
-import MenuBookRoundedIcon from "@mui/icons-material/MenuBookRounded";
+import ArrowOutwardRoundedIcon from "@mui/icons-material/ArrowOutwardRounded";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
-import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
-import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
 export default function Footer() {
   return (
     <footer className="bg-[#171717] text-white">
-      <div className="mx-auto max-w-[1400px] px-6 py-20">
-        <div className="grid grid-cols-1 gap-14 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
+      <div className="mx-auto max-w-[1400px] px-6">
+        <div
+          className="
+            grid gap-14
+            border-b border-white/[0.09]
+            py-16
+            lg:grid-cols-[1.5fr_0.65fr_0.65fr]
+            lg:gap-20
+          "
+        >
           <div>
             <Link
               to="/"
-              className="inline-flex items-center gap-3 text-white no-underline"
+              className="
+                inline-block
+                font-['Playfair']
+                text-[26px] font-bold
+                tracking-[0.02em]
+                text-white
+              "
             >
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#b5202d]">
-                <MenuBookRoundedIcon sx={{ fontSize: 24 }} />
-              </div>
-
-              <div className="flex flex-col">
-                <span className="font-['Playfair'] text-[24px] font-bold leading-none tracking-[0.04em]">
-                  IVORY <span className="text-[#d94a55]">&</span> INK
-                </span>
-
-                <span className="mt-[6px] text-[9px] font-medium uppercase tracking-[0.22em] text-white/40">
-                  Books for curious minds.
-                </span>
-              </div>
+              IVORY
+              <span className="mx-2 text-[#d94a55]">&</span>
+              INK
             </Link>
 
-            <p className="mt-6 max-w-[360px] text-[15px] leading-7 text-white/55">
-              Thoughtfully selected books, unforgettable stories and
-              new ideas for curious readers.
+            <p
+              className="
+                mt-6 max-w-[440px]
+                text-[15px] leading-7
+                text-white/45
+              "
+            >
+              A thoughtful collection of stories, ideas and
+              perspectives for people who never stop being curious.
             </p>
 
             <Link
-              to="/"
-              className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-white transition hover:text-[#d94a55]"
+              to="/categories"
+              className="
+                group mt-8
+                inline-flex items-center gap-2
+                text-[13px] font-semibold
+                text-white
+                transition-colors duration-300
+                hover:text-[#d94a55]
+              "
             >
-              Browse collection
-              <ArrowForwardIcon sx={{ fontSize: 18 }} />
+              Browse the collection
+
+              <ArrowOutwardRoundedIcon
+                sx={{ fontSize: 17 }}
+                className="
+                  transition-transform duration-300
+                  group-hover:translate-x-0.5
+                  group-hover:-translate-y-0.5
+                "
+              />
             </Link>
           </div>
-
           <div>
-            <h3 className="font-['Playfair'] text-lg font-semibold">
-              Explore
-            </h3>
+            <p
+              className="
+                text-[10px] font-semibold
+                uppercase tracking-[0.2em]
+                text-white/30
+              "
+            >
+              Discover
+            </p>
 
-            <ul className="mt-6 space-y-4 text-sm text-white/55">
-              <li>
-                <Link
-                  to="/"
-                  className="transition hover:text-white"
-                >
-                  Home
-                </Link>
-              </li>
+            <div className="mt-6 flex flex-col gap-4">
+              <Link
+                to="/"
+                className="
+                  w-fit text-[14px]
+                  text-white/65
+                  transition-colors duration-300
+                  hover:text-[#d94a55]
+                "
+              >
+                Home
+              </Link>
 
-              <li>
-                <Link
-                  to="/?genre=Romance"
-                  className="transition hover:text-white"
-                >
-                  Romance
-                </Link>
-              </li>
+              <Link
+                to="/categories"
+                className="
+                  w-fit text-[14px]
+                  text-white/65
+                  transition-colors duration-300
+                  hover:text-[#d94a55]
+                "
+              >
+                Categories
+              </Link>
 
-              <li>
-                <Link
-                  to="/?genre=Thriller"
-                  className="transition hover:text-white"
-                >
-                  Thriller
-                </Link>
-              </li>
-
-              <li>
-                <Link
-                  to="/?genre=Fantasy"
-                  className="transition hover:text-white"
-                >
-                  Fantasy
-                </Link>
-              </li>
-            </ul>
+              <Link
+                to="/books/featured"
+                className="
+                  w-fit text-[14px]
+                  text-white/65
+                  transition-colors duration-300
+                  hover:text-[#d94a55]
+                "
+              >
+                Featured
+              </Link>
+            </div>
           </div>
 
           <div>
-            <h3 className="font-['Playfair'] text-lg font-semibold">
-              Customer Care
-            </h3>
+            <p
+              className="
+                text-[10px] font-semibold
+                uppercase tracking-[0.2em]
+                text-white/30
+              "
+            >
+              Support
+            </p>
 
-            <ul className="mt-6 space-y-4 text-sm text-white/55">
-              <li className="cursor-pointer transition hover:text-white">
-                Contact us
-              </li>
+            <div className="mt-6 flex flex-col gap-4">
+              <button
+                type="button"
+                className="
+                  w-fit text-[14px]
+                  text-white/65
+                  transition-colors duration-300
+                  hover:text-[#d94a55]
+                  hover:cursor-pointer
+                "
+              >
+                Contact
+              </button>
 
-              <li className="cursor-pointer transition hover:text-white">
-                Shipping information
-              </li>
+              <button
+                type="button"
+                className="
+                  w-fit text-[14px]
+                  text-white/65
+                  transition-colors duration-300
+                  hover:text-[#d94a55]
+                  hover:cursor-pointer
+                "
+              >
+                Shipping & returns
+              </button>
 
-              <li className="cursor-pointer transition hover:text-white">
-                Returns
-              </li>
-
-              <li className="cursor-pointer transition hover:text-white">
+              <button
+                type="button"
+                className="
+                  w-fit text-[14px]
+                  text-white/65
+                  transition-colors duration-300
+                  hover:text-[#d94a55]
+                  hover:cursor-pointer
+                "
+              >
                 FAQ
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-['Playfair'] text-lg font-semibold">
-              Get in touch
-            </h3>
-
-            <div className="mt-6 space-y-5 text-sm text-white/55">
-              <div className="flex items-start gap-3">
-                <LocationOnOutlinedIcon
-                  sx={{
-                    fontSize: 20,
-                    color: "#d94a55",
-                  }}
-                />
-
-                <div>
-                  <p>123 Library Street</p>
-                  <p className="mt-1">
-                    New York, NY 10001
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <EmailOutlinedIcon
-                  sx={{
-                    fontSize: 20,
-                    color: "#d94a55",
-                  }}
-                />
-
-                <p>hello@ivoryandink.com</p>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <PhoneOutlinedIcon
-                  sx={{
-                    fontSize: 20,
-                    color: "#d94a55",
-                  }}
-                />
-
-                <p>+1 (555) 123-4567</p>
-              </div>
+              </button>
             </div>
           </div>
         </div>
 
-        <div className="mt-16 flex flex-col gap-4 border-t border-white/10 pt-7 text-sm text-white/35 md:flex-row md:items-center md:justify-between">
-          <p>
-            © 2026 Ivory & Ink. All rights reserved.
+        <div
+          className="
+            flex flex-col gap-5
+            border-b border-white/[0.09]
+            py-7
+            md:flex-row
+            md:items-center
+            md:justify-between
+          "
+        >
+          <p className="text-[13px] text-white/40">
+            Have a question or looking for a recommendation?
           </p>
 
-          <div className="flex gap-6">
-            <button className="transition hover:text-white">
-              Privacy Policy
+          <a
+            href="mailto:hello@ivoryandink.com"
+            className="
+              group flex w-fit items-center gap-3
+              text-[13px] font-semibold
+              text-white/75
+              transition-colors duration-300
+              hover:text-white
+            "
+          >
+            <EmailOutlinedIcon
+              sx={{
+                fontSize: 17,
+                color: "#d94a55",
+              }}
+            />
+
+            hello@ivoryandink.com
+
+            <ArrowOutwardRoundedIcon
+              sx={{ fontSize: 15 }}
+              className="
+                transition-transform duration-300
+                group-hover:translate-x-0.5
+                group-hover:-translate-y-0.5
+              "
+            />
+          </a>
+        </div>
+        
+        <div
+          className="
+            flex flex-col gap-4
+            py-6
+            text-[11px]
+            text-white/25
+            md:flex-row
+            md:items-center
+            md:justify-between
+          "
+        >
+          <p>© 2026 Ivory & Ink</p>
+
+          <div className="flex items-center gap-6">
+            <button
+              type="button"
+              className="
+                transition-colors duration-300
+                hover:text-white/65
+                hover:cursor-pointer
+              "
+            >
+              Privacy
             </button>
 
-            <button className="transition hover:text-white">
-              Terms & Conditions
+            <button
+              type="button"
+              className="
+                transition-colors duration-300
+                hover:text-white/65
+                hover:cursor-pointer
+              "
+            >
+              Terms
             </button>
           </div>
         </div>
+
       </div>
     </footer>
   );

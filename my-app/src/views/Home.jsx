@@ -26,6 +26,61 @@ import ViewAllButton from "../components/ViewAllButton";
 import "swiper/css";
 import "swiper/css/navigation";
 
+const categoryImages = {
+  "Fiction": "/images/fiction.jpg",
+  "Detective and mystery stories": "/images/detective.jpg",
+  "American fiction": "/images/american-fiction.jpg",
+  "Christian life": "/images/life.jpg",
+  "Authors, English": "/images/authors.jpg",
+  "Africa, East": "/images/africa.jpg",
+  "Hyland, Morn (Fictitious character)": "/images/hyland.jpg",
+  "Adventure stories": "/images/adventure-stories.jpg",
+};
+const featuredCategories = [
+  "Fiction",
+  "Detective and mystery stories",
+  "Adventure stories",
+  "American fiction",
+];
+ const services = [
+  {
+    title: "Read Anywhere",
+    description: "Enjoy your books on any device, wherever you are.",
+    icon: (
+      <AutoStoriesOutlinedIcon
+        sx={{ fontSize: 30 }}
+      />
+    ),
+  },
+  {
+    title: "Curated Selection",
+    description: "Discover highly rated titles picked from every genre.",
+    icon: (
+      <WorkspacePremiumOutlinedIcon
+        sx={{ fontSize: 30 }}
+      />
+    ),
+  },
+  {
+    title: "Fast Delivery",
+    description: "Quick and reliable shipping directly to your door.",
+    icon: (
+      <LocalShippingOutlinedIcon
+        sx={{ fontSize: 30 }}
+      />
+    ),
+  },
+  {
+    title: "Audio Friendly",
+    description: "Explore stories and learning in a more flexible way.",
+    icon: (
+      <HeadphonesOutlinedIcon
+        sx={{ fontSize: 30 }}
+      />
+    ),
+  },
+];
+
 function Home() {
   const navigate = useNavigate();
   const {
@@ -43,56 +98,8 @@ function Home() {
   const [topRatedBooks, setTopRatedBooks] = useState([]);
   const [genres, setGenres] = useState([]);
   const [authors, setAuthors] = useState([]);
+  const [activeCategory, setActiveCategory] = useState(featuredCategories[0]);
 
-  const categoryImages = {
-    "Fiction": "/images/fiction.jpg",
-    "Detective and mystery stories": "/images/detective.jpg",
-    "American fiction": "/images/american-fiction.jpg",
-    "Christian life": "/images/life.jpg",
-    "Authors, English": "/images/authors.jpg",
-    "Africa, East": "/images/africa.jpg",
-    "Hyland, Morn (Fictitious character)": "/images/hyland.jpg",
-    "Adventure stories": "/images/adventure-stories.jpg",
-  };
-
-  const services = [
-    {
-      title: "Read Anywhere",
-      description: "Enjoy your books on any device, wherever you are.",
-      icon: (
-        <AutoStoriesOutlinedIcon
-          sx={{ fontSize: 30 }}
-        />
-      ),
-    },
-    {
-      title: "Curated Selection",
-      description: "Discover highly rated titles picked from every genre.",
-      icon: (
-        <WorkspacePremiumOutlinedIcon
-          sx={{ fontSize: 30 }}
-        />
-      ),
-    },
-    {
-      title: "Fast Delivery",
-      description: "Quick and reliable shipping directly to your door.",
-      icon: (
-        <LocalShippingOutlinedIcon
-          sx={{ fontSize: 30 }}
-        />
-      ),
-    },
-    {
-      title: "Audio Friendly",
-      description: "Explore stories and learning in a more flexible way.",
-      icon: (
-        <HeadphonesOutlinedIcon
-          sx={{ fontSize: 30 }}
-        />
-      ),
-    },
-  ];
 
   useEffect(() => {
     const fetchTopRated = async () => {
@@ -140,52 +147,115 @@ function Home() {
 
     loadFilterOptions();
   }, []);
+  
+  const scrollToCatalogue = () => {
+    document
+      .getElementById("book-catalogue")
+      ?.scrollIntoView({
+        behavior: "smooth",
+      });
+  };
 
   return (
     <div className="min-h-screen bg-[#f8f6f2] text-[#171717]">
       <section className="relative overflow-hidden bg-[#efe9df]">
-        <div className="mx-auto grid min-h-[620px] max-w-[1400px] grid-cols-1 items-center gap-16 px-6 py-20 lg:grid-cols-2">
-          <div className="max-w-[650px]">
-            <span className="mb-5 inline-block text-sm font-semibold uppercase tracking-[0.25em] text-[#b5202d]">
-              Discover your next favorite book
-            </span>
+        <div className="absolute left-[-100px] top-[-120px] h-[360px] w-[360px] rounded-full bg-[#b5202d]/5 blur-3xl" />
+        <div className="absolute bottom-[-180px] right-[-80px] h-[420px] w-[420px] rounded-full bg-black/5 blur-3xl" />
 
-            <h1 className="font-['Playfair'] text-[56px] font-bold leading-[1.08] md:text-[72px]">
-              Stories that stay
+        <div className="relative mx-auto grid min-h-[650px] max-w-[1400px] grid-cols-1 items-center gap-16 px-6 py-20 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="max-w-[670px]">
+            <div className="mb-6 flex items-center gap-3">
+              <span className="h-px w-10 bg-[#b5202d]" />
+
+              <span className="text-xs font-semibold uppercase tracking-[0.24em] text-[#b5202d]">
+                Discover your next favorite book
+              </span>
+            </div>
+
+            <h1 className="font-['Playfair'] text-[54px] font-bold leading-[1.03] tracking-[-0.02em] md:text-[72px] lg:text-[78px]">
+              Stories worth
               <br />
-              with you.
+              making room for.
             </h1>
 
-            <p className="mt-7 max-w-[560px] text-lg leading-8 text-[#66615c]">
-              Explore fiction, classics, biographies, learning,
-              and hidden gems selected for every kind of reader.
+            <p className="mt-7 max-w-[570px] text-[17px] leading-8 text-[#6f6963]">
+              Explore fiction, classics, biographies,
+              learning and hidden gems selected for
+              curious minds and thoughtful readers.
             </p>
 
-            <div className="mt-9 flex flex-wrap gap-4">
-              <button className="flex items-center gap-2 bg-[#171717] px-7 py-4 text-sm font-semibold text-white transition hover:bg-[#b5202d] hover:cursor-pointer">
+            <div className="mt-10 flex flex-wrap items-center gap-4">
+              <button
+                type="button"
+                onClick={scrollToCatalogue}
+                className="
+                  group flex items-center gap-2
+                  rounded-full bg-[#171717]
+                  px-7 py-4
+                  text-sm font-semibold text-white
+                  transition duration-300
+                  hover:bg-[#b5202d]
+                  hover:cursor-pointer
+                "
+              >
                 Browse Books
-                <ArrowForwardIcon sx={{ fontSize: 18 }} />
+
+                <ArrowForwardIcon
+                  sx={{
+                    fontSize: 18,
+                    transition: "transform 0.25s",
+                  }}
+                  className="group-hover:translate-x-1"
+                />
               </button>
 
-              <button className="border border-[#171717] px-7 py-4 text-sm font-semibold transition hover:bg-white hover:cursor-pointer">
+              <button
+                type="button"
+                onClick={() =>
+                  navigate("/books/featured")
+                }
+                className="
+                  rounded-full border border-[#cfc7bc]
+                  bg-white/40 px-7 py-4
+                  text-sm font-semibold text-[#171717]
+                  backdrop-blur-sm
+                  transition
+                  hover:border-[#171717]
+                  hover:bg-white
+                  hover:cursor-pointer
+                "
+              >
                 View Best Sellers
               </button>
             </div>
+
+            <div className="mt-12 flex flex-wrap gap-x-8 gap-y-3 text-sm text-[#817b75]">
+              <span>6,000+ titles</span>
+              <span>Curated collections</span>
+              <span>Fast delivery</span>
+            </div>
           </div>
 
-          <div className="relative flex justify-center">
-            <div className="relative h-[430px] w-[330px]">
-              <img
-                src="/images/books-banner.jpg"
-                alt="Books"
-                className="absolute inset-0 h-full w-full rounded-[26px] object-cover shadow-2xl"
-              />
+          <div className="relative flex justify-center lg:justify-end">
+            <div className="relative w-full max-w-[460px]">
+              <div className="absolute -left-10 top-14 h-[85%] w-[85%] rounded-[34px] border border-[#cfc8bf]" />
 
-              <div className="absolute -bottom-8 -left-10 w-[220px] rounded-2xl bg-white p-5 shadow-xl">
-                <p className="text-xs uppercase tracking-[0.18em] text-gray-400">
+              <div className="relative ml-auto h-[500px] w-full max-w-[390px] overflow-hidden rounded-[30px] shadow-[0_30px_80px_rgba(49,39,32,0.18)]">
+                <img
+                  src="/images/books-banner.jpg"
+                  alt="Books"
+                  className="h-full w-full object-cover"
+                />
+
+                <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
+              </div>
+
+              <div className="absolute -bottom-8 left-0 max-w-[245px] rounded-[22px] border border-white/70 bg-white/95 p-6 shadow-[0_20px_50px_rgba(0,0,0,0.12)] backdrop-blur">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#b5202d]">
                   Reader's Pick
                 </p>
-                <p className="mt-2 font-['Playfair'] text-xl font-semibold">
+
+                <p className="mt-3 font-['Playfair'] text-[21px] font-semibold leading-snug">
                   Find something worth remembering.
                 </p>
               </div>
@@ -193,194 +263,537 @@ function Home() {
           </div>
         </div>
       </section>
+      <section className="bg-[#171717] py-10 text-white">
+        <div className="mx-auto max-w-[1400px] px-6">
+          <div
+            className="
+              grid grid-cols-1
+              overflow-hidden
+              rounded-[24px]
+              border border-white/10
+              bg-white/[0.03]
+              sm:grid-cols-2
+              lg:grid-cols-4
+            "
+          >
+            {services.map((service, index) => (
+              <div
+                key={service.title}
+                className={`
+                  group relative
+                  px-6 py-7
+                  transition duration-300
+                  hover:bg-white/[0.04]
 
-      <section className="bg-[#171717] py-8 text-white">
-        <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-8 px-6 sm:grid-cols-2 lg:grid-cols-4">
-          {services.map((service) => (
-            <div
-              key={service.title}
-              className="flex items-start gap-4"
-            >
-              <div className="mt-1 text-[#d94a55]">
-                {service.icon}
+                  ${index % 2 === 0 ? "sm:border-r sm:border-white/10" : ""}
+                  ${index < 2 ? "sm:border-b sm:border-white/10" : ""}
+
+                  ${index !== services.length - 1 ? "lg:border-r lg:border-white/10" : ""}
+                  lg:border-b-0
+                `}
+              >
+                <div className="flex items-start gap-4">
+                  <div
+                    className="
+                      flex h-12 w-12 shrink-0
+                      items-center justify-center
+                      rounded-full
+                      bg-[#b5202d]/15
+                      text-[#d94a55]
+                      transition duration-300
+                      group-hover:bg-[#b5202d]
+                      group-hover:text-white
+                      group-hover:scale-105
+                    "
+                  >
+                    {service.icon}
+                  </div>
+
+                  <div>
+                    <h3 className="text-[15px] font-semibold tracking-[0.01em] text-white">
+                      {service.title}
+                    </h3>
+
+                    <p className="mt-2 max-w-[220px] text-[13px] leading-6 text-white/55">
+                      {service.description}
+                    </p>
+                  </div>
+                </div>
+
+                <div
+                  className="
+                    absolute bottom-0 left-6 right-6
+                    h-px
+                    origin-left scale-x-0
+                    bg-[#b5202d]
+                    transition-transform duration-300
+                    group-hover:scale-x-100
+                  "
+                />
               </div>
-
-              <div>
-                <h3 className="font-semibold">
-                  {service.title}
-                </h3>
-
-                <p className="mt-1 text-sm leading-6 text-white/60">
-                  {service.description}
-                </p>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
-      <section className="py-24">
+      <section className="bg-[#f8f6f2] py-20 md:py-24">
         <div className="mx-auto max-w-[1400px] px-6">
-
-          <div className="mb-10 flex items-end justify-between gap-8">
+          <div
+            className="
+              mb-12 flex flex-col gap-6
+              lg:flex-row lg:items-end lg:justify-between
+            "
+          >
             <div>
-              <span className="text-sm font-semibold uppercase tracking-[0.22em] text-[#b5202d]">
-                Browse by category
-              </span>
+              <div className="mb-4 flex items-center gap-3">
+                <span className="h-px w-8 bg-[#b5202d]" />
 
-              <h2 className="mt-3 font-['Playfair'] text-[44px] font-bold leading-tight text-[#171717]">
-                Find your kind of story
+                <span
+                  className="
+                    text-[10px] font-semibold
+                    uppercase tracking-[0.24em]
+                    text-[#b5202d]
+                  "
+                >
+                  Browse by category
+                </span>
+              </div>
+
+              <h2
+                className="
+                  max-w-[650px]
+                  font-['Playfair']
+                  text-[40px] font-bold
+                  leading-[1.06]
+                  tracking-[-0.025em]
+                  text-[#171717]
+                  md:text-[48px]
+                "
+              >
+                Find your kind of story.
               </h2>
 
-              <p className="mt-3 max-w-[520px] text-[14px] leading-6 text-[#77716b]">
-                Explore stories, ideas and perspectives curated for every kind of reader.
+              <p
+                className="
+                  mt-4 max-w-[520px]
+                  text-[15px] leading-7
+                  text-[#77716b]
+                "
+              >
+                Move through our most-loved collections and
+                discover where your next read might begin.
               </p>
             </div>
 
             <ViewAllButton
               label="View all categories"
               to="/categories"
-              className="hidden shrink-0 lg:inline-flex"
+              className="shrink-0"
             />
           </div>
+          <div
+            className="
+              grid items-stretch gap-8
+              lg:grid-cols-[0.95fr_1.05fr]
+              lg:gap-14
+            "
+          >
+            <div
+              className="
+                relative
+                min-h-[420px]
+                overflow-hidden
+                rounded-[28px]
+                bg-[#e8e2da]
+                md:min-h-[500px]
+              "
+            >
+              {featuredCategories.map((category) => (
+                <img
+                  key={category}
+                  src={categoryImages[category]}
+                  alt={category}
+                  className={`
+                    absolute inset-0
+                    h-full w-full
+                    object-cover
+                    transition-all duration-500 ease-out
 
-          <BookSwiper className="w-full">
-            {Object.entries(categoryImages).map(([category, image]) => (
-              <SwiperSlide key={category}>
-                <button
-                  type="button"
-                  onClick={() =>
-                    navigate(
-                      `/books/category/${encodeURIComponent(category)}`
-                    )
-                  }
-                  className="group/category block w-full text-left hover:cursor-pointer"
+                    ${
+                      activeCategory === category
+                        ? "scale-100 opacity-100"
+                        : "scale-[1.03] opacity-0"
+                    }
+                  `}
+                />
+              ))}
+
+              <div
+                className="
+                  absolute inset-0
+                  bg-gradient-to-t
+                  from-black/25
+                  via-transparent
+                  to-transparent
+                "
+              />
+
+              <div
+                className="
+                  absolute bottom-5 left-5
+                  rounded-full
+                  bg-white/90
+                  px-4 py-2
+                  backdrop-blur-md
+                  md:bottom-7 md:left-7
+                "
+              >
+                <span
+                  className="
+                    text-[10px] font-semibold
+                    uppercase tracking-[0.16em]
+                    text-[#171717]
+                  "
                 >
-                  <div className="relative h-[310px] overflow-hidden rounded-[22px] bg-[#eae5dd]">
-                    <img
-                      src={image}
-                      alt={category}
-                      className="
-                        h-full w-full object-cover
-                        transition-transform duration-700 ease-out
-                        group-hover/category:scale-[1.045]
-                      "
-                    />
+                  {activeCategory}
+                </span>
+              </div>
+            </div>
 
-                    <div
-                      className="
-                        absolute inset-0
-                        bg-gradient-to-t
-                        from-black/65
-                        via-black/10
-                        to-transparent
-                      "
-                    />
+            <div className="flex flex-col justify-center">
 
-                    <div
+              <div className="border-t border-[#d8d1c8]">
+                {featuredCategories.map((category, index) => {
+                  const active = activeCategory === category;
+
+                  return (
+                    <button
+                      key={category}
+                      type="button"
+                      onMouseEnter={() =>
+                        setActiveCategory(category)
+                      }
+                      onFocus={() =>
+                        setActiveCategory(category)
+                      }
+                      onClick={() =>
+                        navigate(
+                          `/books/category/${encodeURIComponent(
+                            category
+                          )}`
+                        )
+                      }
                       className="
-                        absolute right-5 top-5
-                        flex h-10 w-10
-                        translate-y-1 items-center justify-center
-                        rounded-full bg-white/90
-                        text-[#171717]
-                        opacity-0 backdrop-blur-sm
-                        transition-all duration-300
-                        group-hover/category:translate-y-0
-                        group-hover/category:opacity-100
+                        group flex w-full
+                        items-center gap-5
+                        border-b border-[#d8d1c8]
+                        py-7
+                        text-left
+                        transition
+                        hover:cursor-pointer
+                        md:py-8
                       "
                     >
-                      <ArrowForwardIcon sx={{ fontSize: 18 }} />
-                    </div>
+                      <span
+                        className={`
+                          w-7 shrink-0
+                          text-[10px] font-semibold
+                          tracking-[0.12em]
+                          transition-colors duration-300
 
-                    <div className="absolute inset-x-0 bottom-0 p-6">
-                      <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-white/65">
-                        Explore
+                          ${
+                            active
+                              ? "text-[#b5202d]"
+                              : "text-[#aaa39c]"
+                          }
+                        `}
+                      >
+                        0{index + 1}
                       </span>
 
-                      <h3 className="max-w-[90%] font-['Playfair'] text-[23px] font-semibold leading-[1.15] text-white">
+                      <span
+                        className={`
+                          flex-1
+                          font-['Playfair']
+                          text-[25px] font-semibold
+                          leading-tight
+                          tracking-[-0.015em]
+                          transition-all duration-300
+                          md:text-[30px]
+
+                          ${
+                            active
+                              ? "translate-x-1 text-[#171717]"
+                              : "text-[#827b74]"
+                          }
+                        `}
+                      >
                         {category}
-                      </h3>
-                    </div>
-                  </div>
-                </button>
-              </SwiperSlide>
-            ))}
-          </BookSwiper>
+                      </span>
 
-          <div className="mt-8 lg:hidden">
-            <ViewAllButton
-              label="View all categories"
-              to="/categories"
-            />
+                      <span
+                        className={`
+                          flex h-10 w-10 shrink-0
+                          items-center justify-center
+                          rounded-full
+                          transition-all duration-300
+
+                          ${
+                            active
+                              ? "bg-[#171717] text-white"
+                              : "bg-transparent text-[#aaa39c]"
+                          }
+
+                          group-hover:bg-[#171717]
+                          group-hover:text-white
+                        `}
+                      >
+                        <ArrowForwardIcon
+                          sx={{ fontSize: 17 }}
+                        />
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
           </div>
-
         </div>
       </section>
 
-      <section className="bg-white py-24">
+      <section className="bg-white py-20 md:py-24">
         <div className="mx-auto max-w-[1400px] px-6">
-          <div className="mb-12 flex items-end justify-between">
-            <div>
-              <span className="text-sm font-semibold uppercase tracking-[0.22em] text-[#b5202d]">
-                Popular now
-              </span>
 
-              <h2 className="mt-3 font-['Playfair'] text-[44px] font-bold">
-                Featured books
+          <div className="mb-12 grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
+            <div>
+              <div className="mb-4 flex items-center gap-3">
+                <span className="h-px w-9 bg-[#b5202d]" />
+
+                <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#b5202d]">
+                  Popular now
+                </span>
+              </div>
+
+              <h2 className="font-['Playfair'] text-[42px] font-bold leading-[1.05] tracking-[-0.02em] text-[#171717] md:text-[48px]">
+                Books readers keep
+                <br className="hidden sm:block" />
+                coming back to.
               </h2>
+
+              <p className="mt-5 max-w-[560px] text-[15px] leading-7 text-[#77716b]">
+                Discover highly rated titles, reader favorites and standout
+                books worth making room for.
+              </p>
             </div>
 
             <ViewAllButton
-              label="View all"
+              label="View all books"
               to="/books/featured"
-              className="hidden lg:inline-flex"
+              className="shrink-0"
             />
           </div>
 
-          <BookSwiper className="w-full">
-            {topRatedBooks.map((book) => (
-              <SwiperSlide key={book.id}>
-                <BookCard
-                  item={{
-                    ...book,
-                    rating: book.average_rating,
-                  }}
-                />
-              </SwiperSlide>
-            ))}
-          </BookSwiper>
+          <div className="relative">
+            <div className="absolute -left-10 top-12 h-[180px] w-[180px] rounded-full bg-[#b5202d]/5 blur-3xl" />
+
+            <div className="relative">
+              <BookSwiper className="w-full">
+                {topRatedBooks.map((book) => (
+                  <SwiperSlide key={book.id}>
+                    <BookCard
+                      item={{
+                        ...book,
+                        rating: book.average_rating,
+                      }}
+                    />
+                  </SwiperSlide>
+                ))}
+              </BookSwiper>
+            </div>
+          </div>
+
         </div>
       </section>
 
-      <section className="px-6 py-24">
-        <div className="relative mx-auto h-[460px] max-w-[1400px] overflow-hidden rounded-[32px]">
-          <img
-            src="/images/books-banner.jpg"
-            alt="Explore books"
-            className="absolute inset-0 h-full w-full object-cover"
-          />
+      <section className="bg-[#f8f6f2] px-6 py-24">
+        <div className="mx-auto max-w-[1400px]">
+          <div
+            className="
+              relative overflow-hidden
+              rounded-[30px]
+              bg-[#eee8df]
+              lg:min-h-[480px]
+            "
+          >
+            <div className="grid min-h-[480px] lg:grid-cols-[0.88fr_1.12fr]">
 
-          <div className="absolute inset-0 bg-black/50" />
+              <div
+                className="
+                  relative z-10
+                  flex flex-col justify-center
+                  px-8 py-14
+                  md:px-12
+                  lg:px-16 lg:py-16
+                "
+              >
+                <div
+                  className="
+                    pointer-events-none
+                    absolute -left-24 -top-24
+                    h-[280px] w-[280px]
+                    rounded-full
+                    bg-[#b5202d]/[0.06]
+                    blur-3xl
+                  "
+                />
 
-          <div className="relative z-10 flex h-full max-w-[680px] flex-col justify-center px-10 text-white md:px-16">
-            <span className="text-sm font-semibold uppercase tracking-[0.22em] text-white/70">
-              Your next chapter starts here
-            </span>
+                <div className="relative">
+                  <div className="mb-6 flex items-center gap-3">
+                    <span className="h-px w-9 bg-[#b5202d]" />
 
-            <h2 className="mt-4 font-['Playfair'] text-5xl font-bold leading-tight">
-              Make space for a new favorite.
-            </h2>
+                    <span
+                      className="
+                        text-[10px] font-semibold
+                        uppercase tracking-[0.24em]
+                        text-[#b5202d]
+                      "
+                    >
+                      Curated for curious minds
+                    </span>
+                  </div>
 
-            <p className="mt-5 max-w-[520px] text-lg leading-8 text-white/75">
-              Browse thousands of titles across fiction, learning,
-              classics, and more.
-            </p>
+                  <h2
+                    className="
+                      max-w-[520px]
+                      font-['Playfair']
+                      text-[42px] font-bold
+                      leading-[1.04]
+                      tracking-[-0.025em]
+                      text-[#171717]
+                      md:text-[50px]
+                      lg:text-[56px]
+                    "
+                  >
+                    Your next favorite
+                    <span className="text-[#b5202d]"> might be here.</span>
+                  </h2>
 
-            <button className="mt-8 hover:cursor-pointer flex w-fit items-center gap-2 bg-white px-7 py-4 text-sm font-semibold text-[#171717] transition hover:bg-[#b5202d] hover:text-white">
-              Shop Collection
-              <ArrowForwardIcon sx={{ fontSize: 18 }} />
-            </button>
+                  <p
+                    className="
+                      mt-6 max-w-[470px]
+                      text-[15px] leading-7
+                      text-[#706a64]
+                    "
+                  >
+                    From unforgettable fiction to ideas that stay with you,
+                    explore thousands of books selected for every kind of
+                    curious mind.
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={scrollToCatalogue}
+                    className="
+                      group mt-9
+                      flex w-fit items-center gap-3
+                      rounded-full
+                      bg-[#171717]
+                      px-6 py-3.5
+                      text-[13px] font-semibold
+                      text-white
+                      transition-all duration-300
+                      hover:bg-[#b5202d]
+                      hover:cursor-pointer
+                    "
+                  >
+                    Explore all books
+
+                    <span
+                      className="
+                        flex h-7 w-7
+                        items-center justify-center
+                        rounded-full
+                        bg-white/10
+                        transition-transform duration-300
+                        group-hover:translate-x-1
+                      "
+                    >
+                      <ArrowForwardIcon sx={{ fontSize: 15 }} />
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              <div
+                className="
+                  relative
+                  min-h-[340px]
+                  overflow-hidden
+                  lg:min-h-[480px]
+                "
+              >
+                <img
+                  src="/images/books-banner.jpg"
+                  alt="Explore our book collection"
+                  className="
+                    absolute inset-0
+                    h-full w-full
+                    object-cover
+                    transition-transform
+                    duration-[1200ms]
+                    hover:scale-[1.025]
+                  "
+                />
+
+                <div
+                  className="
+                    absolute inset-0
+                    bg-gradient-to-r
+                    from-[#eee8df]/60
+                    via-transparent
+                    to-transparent
+                    lg:block
+                    hidden
+                  "
+                />
+
+                <div
+                  className="
+                    absolute bottom-6 right-6
+                    rounded-[16px]
+                    border border-white/30
+                    bg-white/85
+                    px-5 py-4
+                    shadow-[0_12px_35px_rgba(0,0,0,0.10)]
+                    backdrop-blur-xl
+                    md:bottom-8 md:right-8
+                  "
+                >
+                  <p
+                    className="
+                      text-[9px] font-semibold
+                      uppercase tracking-[0.2em]
+                      text-[#b5202d]
+                    "
+                  >
+                    Ivory & Ink
+                  </p>
+
+                  <p
+                    className="
+                      mt-1.5
+                      font-['Playfair']
+                      text-[17px] font-semibold
+                      text-[#171717]
+                    "
+                  >
+                    Books for curious minds.
+                  </p>
+                </div>
+              </div>
+
+            </div>
           </div>
         </div>
       </section>

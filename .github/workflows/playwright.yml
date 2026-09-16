@@ -28,9 +28,25 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
+      - name: Create backend environment file
+        run: |
+          cat <<EOF > backend/.env
+          DB_HOST=mysql
+          DB_USER=root
+          DB_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}
+          DB_NAME=bookstore
+          DB_PORT=3306
+          MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}
+          MYSQL_DATABASE=bookstore
+          EOF
+
       - name: Start backend
         working-directory: ./backend
         run: docker compose up -d
+
+      - name: Check backend containers
+        working-directory: ./backend
+        run: docker compose ps
 
       - name: Start frontend
         working-directory: ./my-app

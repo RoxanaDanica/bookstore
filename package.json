@@ -1,0 +1,23 @@
+{
+  "name": "bookstore-main",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RoxanaDanica/bookstore.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/RoxanaDanica/bookstore/issues"
+  },
+  "homepage": "https://github.com/RoxanaDanica/bookstore#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^26.5.1"
+  }
+}

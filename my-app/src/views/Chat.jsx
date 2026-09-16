@@ -185,6 +185,7 @@ export default function Chat({ onClose }) {
               hover:border-[#b5202d]
               hover:bg-[#b5202d]
               hover:text-white
+              hover:cursor-pointer
             "
           >
             New chat
@@ -276,7 +277,7 @@ export default function Chat({ onClose }) {
         ))}
 
         {thinking && (
-          <div className="flex justify-start">
+          <div data-testid="ivy-thinking" className="flex justify-start">
             <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md border border-[#e5dfd7] bg-white px-4 py-3 shadow-[0_4px_14px_rgba(0,0,0,0.03)]">
               <span className="h-2 w-2 animate-bounce rounded-full bg-[#9b958f] [animation-delay:-0.2s]" />
 

@@ -38,6 +38,7 @@ export default function BookCard({ item }) {
 
   return (
     <Card
+      data-testid="book-card"
       onClick={() => navigate(`/books/${item.id}`)}
       variant="plain"
       sx={{

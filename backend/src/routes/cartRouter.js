@@ -5,8 +5,8 @@ import {
     removeItemFromCart,
     getCartItems
 } from "../services/cartService.js";
-import { placeOrder } from "../services/orderService.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
+import { placeOrder, getUserOrders } from "../services/orderService.js";
 
 const cartRouter = express.Router();
 
@@ -78,6 +78,16 @@ cartRouter.post("/checkout", authMiddleware, async (req, res) => {
         res.status(400).json({
             error: err.message
         });
+    }
+});
+
+cartRouter.get( "/orders", authMiddleware,async (req, res) => {
+    try {
+        const orders = await getUserOrders(req.user.id);
+        res.json(orders);
+    } catch (err) {
+        console.error("Get orders error:", err);
+        res.status(500).json({error: err.message});
     }
 });
 

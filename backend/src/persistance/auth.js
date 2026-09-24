@@ -13,16 +13,19 @@ export const getUserByEmail = async (email) => {
 export const createUser = async (user) => {
   const { name, email, password_hash } = user;
 
-  const [result] = await retrieveConnection().execute(
+  const id = uuidv4();
+
+  await retrieveConnection().execute(
     `INSERT INTO users (id, name, email, password_hash, type)
-     VALUES (UUID(), ?, ?, ?, 'user')`,
-    [name, email, password_hash]
+     VALUES (?, ?, ?, ?, 'user')`,
+    [id, name, email, password_hash]
   );
 
   return {
-    id: result.insertId,
+    id,
     name,
-    email
+    email,
+    type: "user"
   };
 };
 

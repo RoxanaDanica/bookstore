@@ -93,17 +93,9 @@ export const findCartItem = async (cartId, bookId) => {
     return rows[0];
 };
 
-export const upsertCartItem = async (
-    cartId,
-    bookId,
-    quantity
-) => {
-    const existing = await findCartItem(
-        cartId,
-        bookId
-    );
+export const upsertCartItem = async ( cartId, bookId, quantity) => {
+    const existing = await findCartItem( cartId, bookId);
     if (existing) {
-
         await retrieveConnection().execute(
             `
             UPDATE cart_items
@@ -111,14 +103,8 @@ export const upsertCartItem = async (
             WHERE cart_id = ?
             AND book_id = ?
             `,
-            [
-                quantity,
-                cartId,
-                bookId
-            ]
-        );
+            [ quantity, cartId, bookId ]);
     } else {
-
         await retrieveConnection().execute(
             `
             INSERT INTO cart_items(
@@ -127,19 +113,9 @@ export const upsertCartItem = async (
                 book_id,
                 quantity
             )
-            VALUES(
-                ?,
-                ?,
-                ?,
-                ?
-            )
+            VALUES( ?, ?, ?, ? )
             `,
-            [
-                uuidv4(),
-                cartId,
-                bookId,
-                quantity
-            ]
+            [ uuidv4(), cartId, bookId, quantity]
         );
     }
 };
@@ -212,5 +188,56 @@ export const removeCartItem = async (cartId, bookId) => {
         AND book_id = ?
         `,
         [cartId, bookId]
+    );
+};
+
+export const transferCartToUser = async ( guestUserId, userId ) => {
+    await retrieveConnection().execute(
+        `
+        UPDATE carts
+        SET user_id = ?
+        WHERE user_id = ?
+        AND status = 'active'
+        AND expires_at > NOW()
+        `,
+        [userId, guestUserId]
+    );
+};
+
+export const getActiveCartItems = async (userId) => {
+    const [rows] = await retrieveConnection().execute(
+        `
+        SELECT
+            c.id AS cart_id,
+            ci.book_id,
+            ci.quantity
+        FROM carts c
+        INNER JOIN cart_items ci
+            ON ci.cart_id = c.id
+        WHERE c.user_id = ?
+          AND c.status = 'active'
+          AND c.expires_at > NOW()
+        `,[userId] );
+
+    return rows;
+};
+
+export const transferCartOwnership = async ( cartId, userId) => {
+    await retrieveConnection().execute(
+        `
+        UPDATE carts
+        SET user_id = ?
+        WHERE id = ?
+        `, [userId, cartId]
+    );
+};
+
+export const completeCart = async (cartId) => {
+    await retrieveConnection().execute(
+        `
+        UPDATE carts
+        SET status = 'completed'
+        WHERE id = ?
+        `, [cartId]
     );
 };

@@ -1,10 +1,12 @@
 import jwt from "jsonwebtoken";
+
 import { insertGuestUser } from "../persistance/auth.js";
 
 export const generateToken = (user) => {
     return jwt.sign(
         {
             id: user.id,
+            name: user.name,
             email: user.email,
             type: user.type
         },

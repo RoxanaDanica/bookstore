@@ -8,9 +8,8 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 
 import { login, register } from "../api/auth";
 
-export default function AuthSidePanel({ open, onClose, onSuccess }) {
+export default function AuthSidePanel({open, onClose, onSuccess, showGuestOption = true,}) {
   const [mode, setMode] = useState("login");
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -25,8 +24,9 @@ export default function AuthSidePanel({ open, onClose, onSuccess }) {
     onClose();
   };
 
+
   const handleRegister = async () => {
-    const res = await register({ name, email, password });
+    const res = await register({ name, email, password, });
 
     localStorage.setItem("token", res.token);
     localStorage.removeItem("guestCheckoutConfirmed");
@@ -36,7 +36,10 @@ export default function AuthSidePanel({ open, onClose, onSuccess }) {
   };
 
   const handleGuest = () => {
-    localStorage.setItem("guestCheckoutConfirmed", "true");
+    localStorage.setItem(
+      "guestCheckoutConfirmed",
+      "true"
+    );
 
     onSuccess();
     onClose();
@@ -65,7 +68,9 @@ export default function AuthSidePanel({ open, onClose, onSuccess }) {
             </h2>
 
             <p className="mt-3 max-w-[300px] text-sm leading-6 text-[#817b75]">
-              Sign in to continue, create an account, or checkout as a guest.
+              {showGuestOption
+                ? "Sign in to continue, create an account, or checkout as a guest."
+                : "Sign in to your account or create a new one."}
             </p>
           </div>
 
@@ -81,7 +86,9 @@ export default function AuthSidePanel({ open, onClose, onSuccess }) {
               hover:cursor-pointer
             "
           >
-            <CloseRoundedIcon sx={{ fontSize: 21 }} />
+            <CloseRoundedIcon
+              sx={{ fontSize: 21 }}
+            />
           </button>
         </div>
 
@@ -90,7 +97,9 @@ export default function AuthSidePanel({ open, onClose, onSuccess }) {
             type="button"
             onClick={() => setMode("login")}
             className={`
-              rounded-lg px-4 py-2.5 text-sm font-semibold transition hover:cursor-pointer
+              rounded-lg px-4 py-2.5
+              text-sm font-semibold
+              transition hover:cursor-pointer
               ${
                 mode === "login"
                   ? "bg-white text-[#171717] shadow-sm"
@@ -105,7 +114,9 @@ export default function AuthSidePanel({ open, onClose, onSuccess }) {
             type="button"
             onClick={() => setMode("register")}
             className={`
-              rounded-lg px-4 py-2.5 text-sm font-semibold transition hover:cursor-pointer
+              rounded-lg px-4 py-2.5
+              text-sm font-semibold
+              transition hover:cursor-pointer
               ${
                 mode === "register"
                   ? "bg-white text-[#171717] shadow-sm"
@@ -144,10 +155,13 @@ export default function AuthSidePanel({ open, onClose, onSuccess }) {
                 <input
                   type="text"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) =>
+                    setName(e.target.value)
+                  }
                   placeholder="Your name"
                   className="
-                    w-full bg-transparent px-3 py-3.5
+                    w-full bg-transparent
+                    px-3 py-3.5
                     text-sm text-[#171717]
                     outline-none
                     placeholder:text-[#aaa49d]
@@ -182,10 +196,13 @@ export default function AuthSidePanel({ open, onClose, onSuccess }) {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) =>
+                  setEmail(e.target.value)
+                }
                 placeholder="you@example.com"
                 className="
-                  w-full bg-transparent px-3 py-3.5
+                  w-full bg-transparent
+                  px-3 py-3.5
                   text-sm text-[#171717]
                   outline-none
                   placeholder:text-[#aaa49d]
@@ -219,10 +236,13 @@ export default function AuthSidePanel({ open, onClose, onSuccess }) {
               <input
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) =>
+                  setPassword(e.target.value)
+                }
                 placeholder="••••••••"
                 className="
-                  w-full bg-transparent px-3 py-3.5
+                  w-full bg-transparent
+                  px-3 py-3.5
                   text-sm text-[#171717]
                   outline-none
                   placeholder:text-[#aaa49d]
@@ -253,31 +273,36 @@ export default function AuthSidePanel({ open, onClose, onSuccess }) {
           </button>
         </div>
 
-        <div className="my-7 flex items-center gap-4">
-          <div className="h-px flex-1 bg-[#ddd7d0]" />
+        {showGuestOption && (
+          <>
+            <div className="my-7 flex items-center gap-4">
+              <div className="h-px flex-1 bg-[#ddd7d0]" />
 
-          <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#aaa49d]">
-            or
-          </span>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#aaa49d]">
+                or
+              </span>
 
-          <div className="h-px flex-1 bg-[#ddd7d0]" />
-        </div>
+              <div className="h-px flex-1 bg-[#ddd7d0]" />
+            </div>
 
-        <button
-          type="button"
-          onClick={handleGuest}
-          className="
-            w-full rounded-xl border border-[#d8d2cb]
-            bg-transparent px-5 py-3.5
-            text-sm font-semibold text-[#171717]
-            transition
-            hover:border-[#171717]
-            hover:bg-white
-            hover:cursor-pointer
-          "
-        >
-          Continue as Guest
-        </button>
+            <button
+              type="button"
+              onClick={handleGuest}
+              className="
+                w-full rounded-xl
+                border border-[#d8d2cb]
+                bg-transparent px-5 py-3.5
+                text-sm font-semibold text-[#171717]
+                transition
+                hover:border-[#171717]
+                hover:bg-white
+                hover:cursor-pointer
+              "
+            >
+              Continue as Guest
+            </button>
+          </>
+        )}
 
         <div className="mt-auto pt-10">
           <div className="rounded-2xl bg-[#efeae3] p-5">
@@ -286,7 +311,9 @@ export default function AuthSidePanel({ open, onClose, onSuccess }) {
             </p>
 
             <p className="mt-2 text-xs leading-6 text-[#817b75]">
-              Your cart will stay ready while you choose how you'd like to continue.
+              {showGuestOption
+                ? "Your cart will stay ready while you choose how you'd like to continue."
+                : "Sign in to access your account and order history."}
             </p>
           </div>
         </div>

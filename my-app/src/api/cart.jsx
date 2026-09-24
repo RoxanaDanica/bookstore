@@ -23,8 +23,9 @@ export const removeCartItem = (bookId) => {
 };
 
 export const checkout = (payload) => {
-    return getAxiosInstance().post(
-        "/cart/checkout",
-        payload
-    );
+    return getAxiosInstance().post( "/cart/checkout", payload);
+};
+
+export const getOrders = async () => {
+    return await getAxiosInstance().get("/cart/orders");
 };

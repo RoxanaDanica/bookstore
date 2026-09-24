@@ -16,6 +16,7 @@ import SearchResults from "./views/SearchResults";
 
 import MainLayout from "./components/Layout";
 import './index.css'
+import Orders from "./components/Orders";
 
 const router = createBrowserRouter([
   {
@@ -69,6 +70,10 @@ const router = createBrowserRouter([
         path: "/books/search",
         element: <SearchResults />,
       },
+      {
+        path: "/orders",
+        element: <Orders />
+      }
     ],
   },
 ]);

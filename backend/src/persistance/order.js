@@ -73,3 +73,42 @@ export const decreaseBookStock = async (bookId, quantity) => {
         WHERE id = ?`, [quantity, bookId]
     );
 };
+
+export const getOrdersByUser = async (userId) => {
+    const [orders] = await retrieveConnection().execute(
+        `
+        SELECT
+            id,
+            total,
+            status,
+            created_at
+        FROM orders
+        WHERE user_id = ?
+        ORDER BY created_at DESC
+        `,
+        [userId]
+    );
+
+    for (const order of orders) {
+        const [items] = await retrieveConnection().execute(
+            `
+            SELECT
+                oi.book_id,
+                oi.quantity,
+                oi.unit_price,
+                b.title,
+                b.thumbnail,
+                b.authors
+            FROM order_items oi
+            INNER JOIN books b
+                ON b.id = oi.book_id
+            WHERE oi.order_id = ?
+            `,
+            [order.id]
+        );
+
+        order.items = items;
+    }
+
+    return orders;
+};

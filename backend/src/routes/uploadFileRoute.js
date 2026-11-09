@@ -1,11 +1,12 @@
 import express from 'express';
 import multer from 'multer';
 import { processExcelFile } from '../services/uploadFileService.js';
+import adminMiddleware from '../middleware/adminMiddleware.js';
 
 const uploadFileRouter = express.Router();
 const upload = multer({dest: './temp/uploads/'});
 
-uploadFileRouter.post('/', upload.single('file'), async (req, res) => {
+uploadFileRouter.post('/', adminMiddleware, upload.single('file'), async (req, res) => {
     try {
         const file = req.file;
         const pathToDownloadedFile = file.destination + file.filename;

@@ -18,6 +18,8 @@ import MainLayout from "./components/Layout";
 import './index.css'
 import Orders from "./components/Orders";
 
+const isDevelopment = import.meta.env.DEV;
+
 const router = createBrowserRouter([
   {
     element: <MainLayout />,
@@ -25,10 +27,6 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <Home />,
-      },
-      {
-        path: "/administrator",
-        element: <Administrator />,
       },
       {
         path: "/cart",
@@ -45,14 +43,6 @@ const router = createBrowserRouter([
       {
         path: "/reviews",
         element: <BookDetails />,
-      },
-      {
-        path: "/formular",
-        element: <Formular />,
-      },
-      {
-        path: "/formular/:bookId",
-        element: <Formular />,
       },
       {
         path: "/books/featured",
@@ -73,7 +63,24 @@ const router = createBrowserRouter([
       {
         path: "/orders",
         element: <Orders />
-      }
+      },
+      ...(isDevelopment
+      ? [
+          {
+            path: "/administrator",
+            element: <Administrator />,
+          },
+          {
+            path: "/formular",
+            element: <Formular />,
+          },
+          {
+            path: "/formular/:bookId",
+            element: <Formular />,
+          },
+        ]
+      : []),
+      
     ],
   },
 ]);

@@ -11,6 +11,7 @@ import {
   retriveGenres,
   retriveAuthors,
 } from "../services/booksService.js";
+import adminMiddleware from "../middleware/adminMiddleware.js";
 
 const booksRouter = express.Router();
 
@@ -136,13 +137,13 @@ booksRouter.get("/:id", async (req, res) => {
   res.send(book[0]);
 });
 
-booksRouter.delete('/:id', async(req,res) => {
+booksRouter.delete('/:id', adminMiddleware, async(req,res) => {
     const { id } = req.params;
     const book = await deleteBook(id);
     res.send(book);
 })
 
-booksRouter.post('/', async(req, res) => {
+booksRouter.post('/', adminMiddleware, async(req, res) => {
     const book = req.body;
     try {
         validateBookPayload(book);
@@ -167,7 +168,7 @@ booksRouter.get('/stock/:id', async (req, res) => {
     });
 });
 
-booksRouter.put('/:id', async(req, res)=> { 
+booksRouter.put('/:id', adminMiddleware, async(req, res)=> { 
     const id = req.params.id;
     const modifyBook = {...req.body};
     try {

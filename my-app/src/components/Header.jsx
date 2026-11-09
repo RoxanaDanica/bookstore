@@ -26,6 +26,7 @@ function Header() {
   const { cart, loadCart } = useCart();
 
   const search = searchParams.get("q") || "";
+  const isDevelopment = import.meta.env.DEV;
 
   const [searchValue, setSearchValue] = useState(search);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -360,22 +361,24 @@ function Header() {
                 )}
             </div>
 
-            <Link
-              to="/administrator"
-              className="
-                flex h-11 w-11
-                items-center justify-center
-                rounded-full text-[#171717]
-                transition
-                hover:bg-[#eee9e2]
-                hover:text-[#b5202d]
-              "
-              aria-label="Administrator"
-            >
-              <AdminPanelSettingsOutlinedIcon
-                sx={{ fontSize: 24 }}
-              />
-            </Link>
+            {isDevelopment && (
+              <Link
+                to="/administrator"
+                className="
+                  flex h-11 w-11
+                  items-center justify-center
+                  rounded-full text-[#171717]
+                  transition
+                  hover:bg-[#eee9e2]
+                  hover:text-[#b5202d]
+                "
+                aria-label="Administrator"
+              >
+                <AdminPanelSettingsOutlinedIcon
+                  sx={{ fontSize: 24 }}
+                />
+              </Link>
+            )}
           </div>
         </div>
       </header>

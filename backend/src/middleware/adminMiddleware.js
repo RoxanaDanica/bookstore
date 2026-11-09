@@ -1,4 +1,4 @@
-export const adminMiddleware = (req, res, next) => {
+const adminMiddleware = (req, res, next) => {
   const isProduction = process.env.NODE_ENV === "production";
   const isDemoMode = process.env.PUBLIC_DEMO === "true";
 
@@ -10,3 +10,5 @@ export const adminMiddleware = (req, res, next) => {
 
   next();
 };
+
+export default adminMiddleware;

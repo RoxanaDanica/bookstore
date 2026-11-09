@@ -11,12 +11,19 @@ import cartRouter from './src/routes/cartRouter.js';
 
 const app = express()
 app.use(express.json())
-app.use(cors()); 
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://ivory-and-ink.pages.dev",
+    ],
+  })
+);
 
 app.use(express.static('public'));
 
-app.use('/test', (req, res) => {
-  res.send('App worrks!');
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
 });
 
 app.use('/api/books', booksRouter);
@@ -26,11 +33,19 @@ app.use('/api/users', usersRoute);
 app.use('/api/reviews', reviewRoute);
 app.use('/api/auth', authRouter);
 app.use('/api/cart', cartRouter);
+const PORT = process.env.PORT || 3000;
+
 async function startApp() {
-  await initializeDatabase();
-  app.listen(3000, () => {
-    console.log('App started on port 3000');
-});
+  try {
+    await initializeDatabase();
+
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`App started on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("Failed to start application:", error);
+    process.exit(1);
+  }
 }
 
 startApp();

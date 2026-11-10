@@ -1,4 +1,4 @@
-from langchain_ollama import ChatOllama
+from services.model_provider import get_chat_model
 from langchain.agents import create_agent
 from services.get_book_info import get_book_info
 from services.submit_book_review import give_review
@@ -6,7 +6,7 @@ from services.check_book_stock import check_stock
 from services.add_book_to_cart import add_book_to_cart
 
 
-model = ChatOllama(model="qwen2.5")
+model = get_chat_model()
 
 
 agent = create_agent(

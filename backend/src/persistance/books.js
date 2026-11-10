@@ -121,10 +121,13 @@ export const getBooksCategories = async() => {
     return bookCategories;
 }
 
-export const getTopRatedBooks = async (limit = 20, page = 1) => {
-  const offset = (page - 1) * limit;
 
-  const [books] = await retrieveConnection().execute(
+export const getTopRatedBooks = async (limit = 20, page = 1) => {
+  const safeLimit = Math.max(1, Math.floor(Number(limit) || 20));
+  const safePage = Math.max(1, Math.floor(Number(page) || 1));
+  const offset = (safePage - 1) * safeLimit;
+
+  const [books] = await retrieveConnection().query(
     `
       SELECT *
       FROM books
@@ -132,7 +135,7 @@ export const getTopRatedBooks = async (limit = 20, page = 1) => {
       ORDER BY average_rating DESC, ratings_count DESC
       LIMIT ? OFFSET ?
     `,
-    [String(limit), String(offset)]
+    [safeLimit, offset]
   );
 
   const [countResult] = await retrieveConnection().execute(`
@@ -141,15 +144,16 @@ export const getTopRatedBooks = async (limit = 20, page = 1) => {
     WHERE average_rating IS NOT NULL
   `);
 
-  const total = countResult[0].total;
+  const total = Number(countResult[0].total);
 
   return {
     books,
     total,
-    page,
-    totalPages: Math.ceil(total / limit),
+    page: safePage,
+    totalPages: Math.ceil(total / safeLimit),
   };
 };
+
 
 export const removeBook = async(id) => {
     const [book] = await retrieveConnection().execute('DELETE FROM books WHERE `id` = ?', [id]);

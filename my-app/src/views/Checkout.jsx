@@ -34,6 +34,87 @@ const schema = z.object({
     ),
 });
 
+function Section({
+  title,
+  stepId,
+  children,
+  summary,
+  step,
+  isEditing,
+  startEdit,
+}) {
+  const active = step === stepId;
+
+  const readOnly =
+    step > stepId &&
+    !isEditing(stepId);
+
+  return (
+    <div
+      className={`
+        mb-5 overflow-hidden rounded-2xl border bg-white
+        transition-all duration-300
+        ${
+          active
+            ? "border-[#d8d1c8] shadow-[0_10px_30px_rgba(0,0,0,0.05)]"
+            : "border-[#e7e2db]"
+        }
+      `}
+    >
+      <div className="flex items-center justify-between px-7 py-6">
+        <div className="flex items-center gap-4">
+          <div
+            className={`
+              flex h-9 w-9 items-center justify-center rounded-full
+              text-sm font-semibold
+              ${
+                active
+                  ? "bg-[#171717] text-white"
+                  : readOnly
+                  ? "bg-[#eef5ef] text-[#4e7b5b]"
+                  : "bg-[#f3f0ea] text-[#8b8580]"
+              }
+            `}
+          >
+            {readOnly ? (
+              <CheckOutlinedIcon sx={{ fontSize: 18 }} />
+            ) : (
+              stepId
+            )}
+          </div>
+
+          <h2 className="font-['Playfair'] text-[22px] font-semibold text-[#171717]">
+            {title.replace(/^\d+\s*/, "")}
+          </h2>
+        </div>
+
+        {readOnly && (
+          <button
+            type="button"
+            onClick={() => startEdit(stepId)}
+            className="text-sm font-semibold text-[#b5202d] transition hover:text-[#171717] hover:cursor-pointer"
+          >
+            Edit
+          </button>
+        )}
+      </div>
+
+      {active && (
+        <div className="border-t border-[#eee9e3] px-7 pb-7 pt-6">
+          {children}
+        </div>
+      )}
+
+      {readOnly && summary && (
+        <div className="border-t border-[#eee9e3] px-7 py-5 text-sm text-[#77716b]">
+          {summary}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 export default function Checkout() {
   const {
     cart,
@@ -163,83 +244,6 @@ export default function Checkout() {
     }
   };
 
-  function Section({
-    title,
-    stepId,
-    children,
-    summary,
-  }) {
-    const active = step === stepId;
-
-    const readOnly =
-      step > stepId &&
-      !isEditing(stepId);
-
-    return (
-      <div
-        className={`
-          mb-5 overflow-hidden rounded-2xl border bg-white
-          transition-all duration-300
-          ${
-            active
-              ? "border-[#d8d1c8] shadow-[0_10px_30px_rgba(0,0,0,0.05)]"
-              : "border-[#e7e2db]"
-          }
-        `}
-      >
-        <div className="flex items-center justify-between px-7 py-6">
-          <div className="flex items-center gap-4">
-            <div
-              className={`
-                flex h-9 w-9 items-center justify-center rounded-full
-                text-sm font-semibold
-                ${
-                  active
-                    ? "bg-[#171717] text-white"
-                    : readOnly
-                    ? "bg-[#eef5ef] text-[#4e7b5b]"
-                    : "bg-[#f3f0ea] text-[#8b8580]"
-                }
-              `}
-            >
-              {readOnly ? (
-                <CheckOutlinedIcon sx={{ fontSize: 18 }} />
-              ) : (
-                stepId
-              )}
-            </div>
-
-            <h2 className="font-['Playfair'] text-[22px] font-semibold text-[#171717]">
-              {title.replace(/^\d+\s*/, "")}
-            </h2>
-          </div>
-
-          {readOnly && (
-            <button
-              type="button"
-              onClick={() => startEdit(stepId)}
-              className="text-sm font-semibold text-[#b5202d] transition hover:text-[#171717] hover:cursor-pointer"
-            >
-              Edit
-            </button>
-          )}
-        </div>
-
-        {active && (
-          <div className="border-t border-[#eee9e3] px-7 pb-7 pt-6">
-            {children}
-          </div>
-        )}
-
-        {readOnly && summary && (
-          <div className="border-t border-[#eee9e3] px-7 py-5 text-sm text-[#77716b]">
-            {summary}
-          </div>
-        )}
-      </div>
-    );
-  }
-
   if (cartLoading) {
     return <h2>Loading checkout...</h2>;
   }
@@ -295,6 +299,9 @@ return (
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_380px]">
         <div>
           <Section
+            step={step}
+            isEditing={isEditing}
+            startEdit={startEdit}
             title="1 Personal Information"
             stepId={STEP.PERSONAL}
             summary={
@@ -509,6 +516,9 @@ return (
           </Section>
 
           <Section
+            step={step}
+            isEditing={isEditing}
+            startEdit={startEdit}
             title="2 Shipping Method"
             stepId={STEP.SHIPPING}
             summary={
@@ -610,6 +620,9 @@ return (
           </Section>
 
           <Section
+            step={step}
+            isEditing={isEditing}
+            startEdit={startEdit}
             title="3 Payment"
             stepId={STEP.PAYMENT}
             summary={

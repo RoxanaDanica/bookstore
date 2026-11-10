@@ -45,8 +45,11 @@ export const chat = async (
     content: item.content
   }));
 
+  const AI_SERVICE_URL =
+    process.env.AI_SERVICE_URL || "http://localhost:8000";
+
   const response = await fetch(
-    "http://host.docker.internal:8000/chat",
+    `${AI_SERVICE_URL}/chat`,
     {
       method: "POST",
       headers: {

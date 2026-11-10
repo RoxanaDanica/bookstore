@@ -1,24 +1,46 @@
+
 import { retrieveConnection } from "./db.js";
 
 const getInsertBookPreparedStatement = () => {
-    const allFeilds = ['title', 'author', 'genre', 'publisher',
-        'publicationYear', 'isbn', 'language', 'pages', 'description',
-        'coverImage', 'rating', 'availableCopies', 'price'
+    const allFields = [
+        'title',
+        'author',
+        'genre',
+        'publisher',
+        'publicationYear',
+        'isbn',
+        'language',
+        'pages',
+        'description',
+        'coverImage',
+        'rating',
+        'availableCopies',
+        'price'
     ];
-    const fieldsWithTicks = allFeilds.map(field => '`' + field + '`');
-    const sql = `INSERT INTO books(${fieldsWithTicks.join(', ')}) VALUES (${'?, '.repeat(allFeilds.length)})`;
-    return sql.replace(/,\s*\)/, ')') ;
-}  
 
-export const createBooks = async(rows) => {
-    const conn = await retrieveConnection();
-    const promises = [];
+    const fieldsWithTicks = allFields.map(
+        field => `\`${field}\``
+    );
 
-    rows.forEach(row => {
-        const promise = conn.execute(getInsertBookPreparedStatement(), Object.values(row));
-        promises.push(promise);
-    }); 
-    const results = await Promise.all(promises);
+    const placeholders = allFields
+        .map(() => '?')
+        .join(', ');
+
+    return `
+        INSERT INTO books (${fieldsWithTicks.join(', ')})
+        VALUES (${placeholders})
+    `;
+};
+
+export const createBooks = async (rows) => {
+    const db = retrieveConnection();
+    const sql = getInsertBookPreparedStatement();
+
+    const results = await Promise.all(
+        rows.map(row =>
+            db.execute(sql, Object.values(row))
+        )
+    );
+
     return results;
-
-}  
+};

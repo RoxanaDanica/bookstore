@@ -1,24 +1,29 @@
+
 import { retrieveConnection } from "./db.js";
 import { v4 as uuidv4 } from "uuid";
 
-export const findActiveCart = async (userId) => {
-    const [rows] = await retrieveConnection().execute(
+const getDb = (conn) => conn ?? retrieveConnection();
+
+export const findActiveCart = async (userId, conn) => {
+    const [rows] = await getDb(conn).execute(
         `
         SELECT *
         FROM carts
         WHERE user_id = ?
-        AND status = 'active'
-        AND expires_at > NOW()
+          AND status = 'active'
+          AND expires_at > NOW()
         LIMIT 1
         `,
         [userId]
     );
+
     return rows[0];
 };
 
-export const createCart = async (userId) => {
+export const createCart = async (userId, conn) => {
     const id = uuidv4();
-    await retrieveConnection().execute(
+
+    await getDb(conn).execute(
         `
         INSERT INTO carts (
             id,
@@ -33,179 +38,193 @@ export const createCart = async (userId) => {
             DATE_ADD(NOW(), INTERVAL 30 MINUTE)
         )
         `,
-        [
-            id,
-            userId
-        ]
+        [id, userId]
     );
+
     return {
         id,
         user_id: userId
     };
 };
 
-export const lockBook = async (bookId) => {
-    const [rows] = await retrieveConnection().execute(
+export const lockBook = async (bookId, conn) => {
+    const [rows] = await getDb(conn).execute(
         `
-        SELECT
-            id,
-            stock
+        SELECT id, stock
         FROM books
         WHERE id = ?
         FOR UPDATE
         `,
         [bookId]
     );
+
     return rows[0];
 };
 
-export const getReservedQuantity = async (bookId) => {
-    const [rows] = await retrieveConnection().execute(
+export const getReservedQuantity = async (bookId, conn) => {
+    const [rows] = await getDb(conn).execute(
         `
         SELECT
             COALESCE(SUM(ci.quantity), 0) AS reserved
         FROM cart_items ci
         INNER JOIN carts c
             ON c.id = ci.cart_id
-        WHERE
-            ci.book_id = ?
-            AND c.status = 'active'
-            AND c.expires_at > NOW()
+        WHERE ci.book_id = ?
+          AND c.status = 'active'
+          AND c.expires_at > NOW()
         `,
         [bookId]
     );
-    return rows[0].reserved;
+
+    return Number(rows[0].reserved);
 };
 
-export const findCartItem = async (cartId, bookId) => {
-    const [rows] = await retrieveConnection().execute(
+export const findCartItem = async (cartId, bookId, conn) => {
+    const [rows] = await getDb(conn).execute(
         `
         SELECT *
         FROM cart_items
         WHERE cart_id = ?
-        AND book_id = ?
+          AND book_id = ?
         `,
-        [
-            cartId,
-            bookId
-        ]
+        [cartId, bookId]
     );
+
     return rows[0];
 };
 
-export const upsertCartItem = async ( cartId, bookId, quantity) => {
-    const existing = await findCartItem( cartId, bookId);
+export const upsertCartItem = async (
+    cartId,
+    bookId,
+    quantity,
+    conn
+) => {
+    const db = getDb(conn);
+
+    const existing = await findCartItem(
+        cartId,
+        bookId,
+        conn
+    );
+
     if (existing) {
-        await retrieveConnection().execute(
+        await db.execute(
             `
             UPDATE cart_items
             SET quantity = ?
             WHERE cart_id = ?
-            AND book_id = ?
+              AND book_id = ?
             `,
-            [ quantity, cartId, bookId ]);
+            [quantity, cartId, bookId]
+        );
     } else {
-        await retrieveConnection().execute(
+        await db.execute(
             `
-            INSERT INTO cart_items(
+            INSERT INTO cart_items (
                 id,
                 cart_id,
                 book_id,
                 quantity
             )
-            VALUES( ?, ?, ?, ? )
+            VALUES (?, ?, ?, ?)
             `,
-            [ uuidv4(), cartId, bookId, quantity]
+            [uuidv4(), cartId, bookId, quantity]
         );
     }
 };
 
-export const refreshCartExpiration = async (cartId) => {
-    await retrieveConnection().execute(
+export const refreshCartExpiration = async (cartId, conn) => {
+    await getDb(conn).execute(
         `
         UPDATE carts
-        SET expires_at =
-            DATE_ADD(
-                NOW(),
-                INTERVAL 30 MINUTE
-            )
+        SET expires_at = DATE_ADD(
+            NOW(),
+            INTERVAL 30 MINUTE
+        )
         WHERE id = ?
         `,
         [cartId]
     );
 };
 
-export const getCart = async (userId) => {
-    const [rows] = await retrieveConnection().execute(
+export const getCart = async (userId, conn) => {
+    const [rows] = await getDb(conn).execute(
         `
         SELECT
             c.id AS cart_id,
-
             ci.book_id,
             ci.quantity,
-
             b.title,
             b.thumbnail,
             b.authors,
             b.categories,
             b.price
-
         FROM carts c
-
         INNER JOIN cart_items ci
             ON ci.cart_id = c.id
-
         INNER JOIN books b
             ON b.id = ci.book_id
-
-        WHERE
-            c.user_id = ?
-            AND c.status = 'active'
-            AND c.expires_at > NOW()
+        WHERE c.user_id = ?
+          AND c.status = 'active'
+          AND c.expires_at > NOW()
         `,
         [userId]
     );
+
     return rows;
 };
 
-export const updateCartItemQuantity = async (cartId, bookId, quantity) => {
-    await retrieveConnection().execute(
+export const updateCartItemQuantity = async (
+    cartId,
+    bookId,
+    quantity,
+    conn
+) => {
+    await getDb(conn).execute(
         `
         UPDATE cart_items
         SET quantity = ?
         WHERE cart_id = ?
-        AND book_id = ?
+          AND book_id = ?
         `,
         [quantity, cartId, bookId]
     );
 };
 
-export const removeCartItem = async (cartId, bookId) => {
-    await retrieveConnection().execute(
+export const removeCartItem = async (
+    cartId,
+    bookId,
+    conn
+) => {
+    await getDb(conn).execute(
         `
         DELETE FROM cart_items
         WHERE cart_id = ?
-        AND book_id = ?
+          AND book_id = ?
         `,
         [cartId, bookId]
     );
 };
 
-export const transferCartToUser = async ( guestUserId, userId ) => {
-    await retrieveConnection().execute(
+export const transferCartToUser = async (
+    guestUserId,
+    userId,
+    conn
+) => {
+    await getDb(conn).execute(
         `
         UPDATE carts
         SET user_id = ?
         WHERE user_id = ?
-        AND status = 'active'
-        AND expires_at > NOW()
+          AND status = 'active'
+          AND expires_at > NOW()
         `,
         [userId, guestUserId]
     );
 };
 
-export const getActiveCartItems = async (userId) => {
-    const [rows] = await retrieveConnection().execute(
+export const getActiveCartItems = async (userId, conn) => {
+    const [rows] = await getDb(conn).execute(
         `
         SELECT
             c.id AS cart_id,
@@ -217,27 +236,35 @@ export const getActiveCartItems = async (userId) => {
         WHERE c.user_id = ?
           AND c.status = 'active'
           AND c.expires_at > NOW()
-        `,[userId] );
+        `,
+        [userId]
+    );
 
     return rows;
 };
 
-export const transferCartOwnership = async ( cartId, userId) => {
-    await retrieveConnection().execute(
+export const transferCartOwnership = async (
+    cartId,
+    userId,
+    conn
+) => {
+    await getDb(conn).execute(
         `
         UPDATE carts
         SET user_id = ?
         WHERE id = ?
-        `, [userId, cartId]
+        `,
+        [userId, cartId]
     );
 };
 
-export const completeCart = async (cartId) => {
-    await retrieveConnection().execute(
+export const completeCart = async (cartId, conn) => {
+    await getDb(conn).execute(
         `
         UPDATE carts
         SET status = 'completed'
         WHERE id = ?
-        `, [cartId]
+        `,
+        [cartId]
     );
 };

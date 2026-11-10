@@ -1,16 +1,39 @@
+
 import { retrieveConnection } from "../persistance/db.js";
-import { createOrderFromCart } from "../persistance/order.js"
-import { getOrdersByUser } from "../persistance/order.js"
+import {
+    createOrderFromCart,
+    getOrdersByUser
+} from "../persistance/order.js";
 
 export const placeOrder = async (userId) => {
-    await retrieveConnection().beginTransaction();
+    const conn = await retrieveConnection().getConnection();
+    let transactionStarted = false;
+
     try {
-        const order = await createOrderFromCart(userId);
-        await retrieveConnection().commit();
+        await conn.beginTransaction();
+        transactionStarted = true;
+
+        const order = await createOrderFromCart(userId, conn);
+
+        await conn.commit();
+        transactionStarted = false;
+
         return order;
     } catch (err) {
-        await retrieveConnection().rollback();
+        if (transactionStarted) {
+            try {
+                await conn.rollback();
+            } catch (rollbackError) {
+                console.error(
+                    "Order rollback failed:",
+                    rollbackError
+                );
+            }
+        }
+
         throw err;
+    } finally {
+        conn.release();
     }
 };
 

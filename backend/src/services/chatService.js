@@ -62,7 +62,17 @@ export const chat = async (
     }
   );
 
-  const data = await response.json();
+  const responseText = await response.text();
+
+  console.log("IVY STATUS:", response.status);
+  console.log("IVY CONTENT TYPE:", response.headers.get("content-type"));
+  console.log("IVY RESPONSE:", responseText.slice(0, 500));
+
+  if (!response.ok) {
+    throw new Error(`Ivy returned HTTP ${response.status}`);
+  }
+
+  const data = JSON.parse(responseText);
 
   const answer =
     data.response ??

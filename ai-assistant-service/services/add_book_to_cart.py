@@ -3,7 +3,7 @@ import requests
 
 from langchain_core.tools import tool
 from services.auth_context import get_token
-
+from services.config import BACKEND_URL
 
 @tool
 def add_book_to_cart(
@@ -30,7 +30,7 @@ def add_book_to_cart(
 
     try:
         response = requests.post(
-            "http://localhost:3000/api/cart/items",
+            f"{BACKEND_URL}/api/cart/items",
             json={
                 "bookId": book_id,
                 "quantity": quantity,

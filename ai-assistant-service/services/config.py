@@ -1,1 +1,6 @@
-BACKEND_URL = "http://localhost:3000"
+import os
+
+BACKEND_URL = os.getenv(
+    "BACKEND_URL",
+    "http://localhost:3000"
+)

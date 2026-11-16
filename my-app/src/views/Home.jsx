@@ -562,45 +562,51 @@ function Home() {
         </div>
       </section>
 
-      <section className="bg-white py-20 md:py-24">
-        <div className="mx-auto max-w-[1400px] px-6">
+    
+      <section className="w-full overflow-hidden bg-white py-12 sm:py-16 lg:py-24">
+        <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-8">
 
-          <div className="mb-12 grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
-            <div>
+          <div className="mb-8 grid gap-6 sm:mb-10 lg:mb-12 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+            <div className="min-w-0">
               <div className="mb-4 flex items-center gap-3">
-                <span className="h-px w-9 bg-[#b5202d]" />
+                <span className="h-px w-7 shrink-0 bg-[#b5202d] sm:w-9" />
 
-                <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#b5202d]">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#b5202d] sm:text-[11px] sm:tracking-[0.24em]">
                   Popular now
                 </span>
               </div>
 
-              <h2 className="font-['Playfair'] text-[42px] font-bold leading-[1.05] tracking-[-0.02em] text-[#171717] md:text-[48px]">
+              <h2 className="font-['Playfair'] text-[30px] font-bold leading-[1.12] tracking-[-0.02em] text-[#171717] sm:text-[38px] md:text-[44px] lg:text-[48px]">
                 Books readers keep
                 <br className="hidden sm:block" />
-                coming back to.
+                {" "}coming back to.
               </h2>
 
-              <p className="mt-5 max-w-[560px] text-[15px] leading-7 text-[#77716b]">
+              <p className="mt-4 max-w-[560px] text-[14px] leading-6 text-[#77716b] sm:mt-5 sm:text-[15px] sm:leading-7">
                 Discover highly rated titles, reader favorites and standout
                 books worth making room for.
               </p>
             </div>
 
-            <ViewAllButton
-              label="View all books"
-              to="/books/featured"
-              className="shrink-0"
-            />
+            <div className="flex justify-start lg:justify-end">
+              <ViewAllButton
+                label="View all books"
+                to="/books/featured"
+                className="shrink-0"
+              />
+            </div>
           </div>
 
-          <div className="relative">
-            <div className="absolute -left-10 top-12 h-[180px] w-[180px] rounded-full bg-[#b5202d]/5 blur-3xl" />
+          <div className="relative min-w-0">
+            <div className="pointer-events-none absolute -left-10 top-12 h-[120px] w-[120px] rounded-full bg-[#b5202d]/5 blur-3xl sm:h-[180px] sm:w-[180px]" />
 
-            <div className="relative">
-              <BookSwiper className="w-full">
+            <div className="relative min-w-0 overflow-hidden">
+              <BookSwiper className="w-full min-w-0">
                 {topRatedBooks.map((book) => (
-                  <SwiperSlide key={book.id}>
+                  <SwiperSlide
+                    key={book.id}
+                    className="!h-auto min-w-0"
+                  >
                     <BookCard
                       item={{
                         ...book,
@@ -615,6 +621,7 @@ function Home() {
 
         </div>
       </section>
+
 
       <section className="bg-[#f8f6f2] px-6 py-24">
         <div className="mx-auto max-w-[1400px]">

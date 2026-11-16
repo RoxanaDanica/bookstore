@@ -1,8 +1,5 @@
-import {
-  useState,
-  useEffect,
-  useRef
-} from "react";
+
+import { useState, useEffect, useRef } from "react";
 
 import {
   sendChatMessage,
@@ -18,29 +15,52 @@ export default function Chat({ onClose }) {
   const [conversationId, setConversationId] = useState(null);
   const [thinking, setThinking] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [startingNewChat, setStartingNewChat] = useState(false);
 
   const bottomRef = useRef(null);
 
+  const conversationVersionRef = useRef(0);
+  const startingNewChatRef = useRef(false);
+  const sendingRef = useRef(false);
+
   useEffect(() => {
+    let cancelled = false;
+    const loadVersion = conversationVersionRef.current;
+
     const loadConversation = async () => {
       try {
         const res = await getConversation();
+
+        if (
+          cancelled ||
+          conversationVersionRef.current !== loadVersion
+        ) {
+          return;
+        }
 
         setMessages(res.data.messages ?? []);
         setConversationId(
           res.data.conversation_id ?? null
         );
       } catch (err) {
-        console.error(
-          "Could not load conversation",
-          err
-        );
+        if (!cancelled) {
+          console.error(
+            "Could not load conversation",
+            err
+          );
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
 
     loadConversation();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -50,46 +70,82 @@ export default function Chat({ onClose }) {
   }, [messages, thinking]);
 
   const handleNewConversation = async () => {
+    if (startingNewChatRef.current) {
+      return;
+    }
+
+    startingNewChatRef.current = true;
+    setStartingNewChat(true);
+
+    conversationVersionRef.current += 1;
+    setMessages([]);
+    setInput("");
+    setThinking(false);
+    setConversationId(null);
+    sendingRef.current = false;
+
     try {
       const res = await startConversation();
 
       setConversationId(
         res.data.conversation_id
       );
-
-      setMessages([]);
-      setInput("");
     } catch (err) {
       console.error(
         "Could not start conversation",
         err
       );
+
+      setMessages([
+        {
+          role: "assistant",
+          text: "Unable to start a new conversation. Please try again later."
+        }
+      ]);
+    } finally {
+      startingNewChatRef.current = false;
+      setStartingNewChat(false);
     }
   };
 
   const sendMessage = async () => {
     const message = input.trim();
 
-    if (!message || thinking) {
+    if (
+      !message ||
+      sendingRef.current ||
+      startingNewChatRef.current
+    ) {
       return;
     }
 
+    const requestVersion =
+      conversationVersionRef.current;
+
+    const isCurrentConversation = () =>
+      conversationVersionRef.current === requestVersion;
+
+    sendingRef.current = true;
     setThinking(true);
 
     try {
-      let activeConversationId =
-        conversationId;
+      let activeConversationId = conversationId;
 
       if (!activeConversationId) {
-        const startRes =
-          await startConversation();
+        const startRes = await startConversation();
+
+        if (!isCurrentConversation()) {
+          return;
+        }
 
         activeConversationId =
           startRes.data.conversation_id;
 
-        setConversationId(
-          activeConversationId
-        );
+        setConversationId(activeConversationId);
+      }
+
+      if (!isCurrentConversation()) {
+        return;
       }
 
       setMessages((prev) => [
@@ -104,9 +160,12 @@ export default function Chat({ onClose }) {
 
       const res = await sendChatMessage({
         message,
-        conversation_id:
-          activeConversationId
+        conversation_id: activeConversationId
       });
+
+      if (!isCurrentConversation()) {
+        return;
+      }
 
       setMessages((prev) => [
         ...prev,
@@ -116,8 +175,7 @@ export default function Chat({ onClose }) {
         }
       ]);
 
-      const actions =
-        res.data.actions ?? [];
+      const actions = res.data.actions ?? [];
 
       const cartUpdated = actions.some(
         (action) =>
@@ -130,20 +188,24 @@ export default function Chat({ onClose }) {
         );
       }
     } catch (err) {
-      console.error(
-        "Chat error:",
-        err
-      );
+      if (!isCurrentConversation()) {
+        return;
+      }
+
+      console.error("Chat error:", err);
 
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          text: "AI service error"
+          text: "I'm temporarily unavailable. Please try again later. Thank you for your patience!"
         }
       ]);
     } finally {
-      setThinking(false);
+      if (isCurrentConversation()) {
+        sendingRef.current = false;
+        setThinking(false);
+      }
     }
   };
 
@@ -178,6 +240,7 @@ export default function Chat({ onClose }) {
           <button
             type="button"
             onClick={handleNewConversation}
+            disabled={startingNewChat}
             className="
               rounded-full border border-[#ded8d1]
               px-4 py-2 text-xs font-semibold
@@ -186,6 +249,8 @@ export default function Chat({ onClose }) {
               hover:bg-[#b5202d]
               hover:text-white
               hover:cursor-pointer
+              disabled:cursor-not-allowed
+              disabled:opacity-50
             "
           >
             New chat
@@ -213,7 +278,8 @@ export default function Chat({ onClose }) {
 
       <div className="flex-1 space-y-4 overflow-y-auto bg-[#faf8f5] px-4 py-5">
         {messages.length === 0 &&
-          !thinking && (
+          !thinking &&
+          !startingNewChat && (
             <div className="flex h-full items-center justify-center">
               <div className="max-w-[280px] text-center">
                 <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#efe9df]">
@@ -236,6 +302,14 @@ export default function Chat({ onClose }) {
               </div>
             </div>
           )}
+
+        {startingNewChat && (
+          <div className="flex h-full items-center justify-center">
+            <p className="text-sm text-[#8b8580]">
+              Starting a new conversation...
+            </p>
+          </div>
+        )}
 
         {messages.map((message, index) => (
           <div
@@ -271,13 +345,16 @@ export default function Chat({ onClose }) {
                 }
               `}
             >
-              {message.text}
+              {message.text ?? message.content}
             </div>
           </div>
         ))}
 
         {thinking && (
-          <div data-testid="ivy-thinking" className="flex justify-start">
+          <div
+            data-testid="ivy-thinking"
+            className="flex justify-start"
+          >
             <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md border border-[#e5dfd7] bg-white px-4 py-3 shadow-[0_4px_14px_rgba(0,0,0,0.03)]">
               <span className="h-2 w-2 animate-bounce rounded-full bg-[#9b958f] [animation-delay:-0.2s]" />
 
@@ -307,6 +384,7 @@ export default function Chat({ onClose }) {
                 sendMessage();
               }
             }}
+            disabled={startingNewChat}
             className="
               max-h-[110px]
               min-h-[42px]
@@ -320,6 +398,7 @@ export default function Chat({ onClose }) {
               text-[#171717]
               outline-none
               placeholder:text-[#aaa49d]
+              disabled:cursor-not-allowed
             "
             placeholder="Ask about a book..."
             rows={1}
@@ -330,6 +409,7 @@ export default function Chat({ onClose }) {
             onClick={sendMessage}
             disabled={
               thinking ||
+              startingNewChat ||
               !input.trim()
             }
             className="

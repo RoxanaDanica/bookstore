@@ -14,6 +14,8 @@ import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import MenuBookRoundedIcon from "@mui/icons-material/MenuBookRounded";
 import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
+import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 
 import AuthSidePanel from "./AuthSidePanel";
 import { createGuest, getMe } from "../api/auth";
@@ -33,6 +35,7 @@ function Header() {
   const [user, setUser] = useState(null);
   const [authOpen, setAuthOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const totalItems = cart?.totalItems || 0;
 
@@ -214,8 +217,21 @@ function Header() {
               </Link>
             ))}
           </nav>
-
+          
           <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileMenuOpen}
+              className="flex h-11 w-11 items-center justify-center rounded-full text-[#171717] transition hover:bg-[#eee9e2] lg:hidden"
+            >
+              {mobileMenuOpen ? (
+                <CloseRoundedIcon />
+              ) : (
+                <MenuRoundedIcon />
+              )}
+            </button>
             <form
               onSubmit={handleSearch}
               className="
@@ -381,6 +397,22 @@ function Header() {
             )}
           </div>
         </div>
+        {mobileMenuOpen && (
+          <nav className="border-t border-[#e5dfd7] bg-white px-6 py-4 lg:hidden">
+            <div className="flex flex-col gap-1">
+              {categories.map((category) => (
+                <Link
+                  key={category}
+                  to={`/books/category/${encodeURIComponent(category)}`}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="rounded-lg px-3 py-3 text-sm font-medium text-[#171717] transition hover:bg-[#f8f6f2] hover:text-[#b5202d]"
+                >
+                  {category}
+                </Link>
+              ))}
+            </div>
+          </nav>
+        )}
       </header>
 
       <AuthSidePanel

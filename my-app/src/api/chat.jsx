@@ -11,3 +11,11 @@ export const startConversation = () => {
 export const getConversation = () => {
   return getAxiosInstance().get("/chat");
 };
+
+export const wakeUpIvy = async () => {
+  const response = await getAxiosInstance().get("/chat/health", {
+    timeout: 90000,
+  });
+
+  return response.data;
+};

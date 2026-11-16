@@ -17,6 +17,7 @@ import SearchResults from "./views/SearchResults";
 import MainLayout from "./components/Layout";
 import './index.css'
 import Orders from "./components/Orders";
+import { wakeUpIvy } from "./api/chat";
 
 const isDevelopment = import.meta.env.DEV;
 
@@ -87,6 +88,14 @@ const router = createBrowserRouter([
 
 function App() {
   const [authReady, setAuthReady] = useState(false);
+
+  useEffect(() => {
+    if (import.meta.env.DEV) return;
+
+    wakeUpIvy().catch((error) => {
+      console.debug("Ivy is temporarily unavailable:", error.message);
+    });
+  }, []);
 
   useEffect(() => {
     async function initAuth() {

@@ -20,7 +20,6 @@ export default function Chat({ onClose }) {
   const bottomRef = useRef(null);
 
   const conversationVersionRef = useRef(0);
-  const startingNewChatRef = useRef(false);
   const sendingRef = useRef(false);
 
   useEffect(() => {
@@ -70,31 +69,30 @@ export default function Chat({ onClose }) {
   }, [messages, thinking]);
 
   const handleNewConversation = async () => {
-    if (startingNewChatRef.current) {
-      return;
-    }
-
-    startingNewChatRef.current = true;
-    setStartingNewChat(true);
-
     conversationVersionRef.current += 1;
+    const currentVersion = conversationVersionRef.current;
+
     setMessages([]);
     setInput("");
     setThinking(false);
     setConversationId(null);
+
     sendingRef.current = false;
+    setStartingNewChat(true);
 
     try {
       const res = await startConversation();
+      if (conversationVersionRef.current !== currentVersion) {
+        return;
+      }
 
-      setConversationId(
-        res.data.conversation_id
-      );
+      setConversationId(res.data.conversation_id);
     } catch (err) {
-      console.error(
-        "Could not start conversation",
-        err
-      );
+      if (conversationVersionRef.current !== currentVersion) {
+        return;
+      }
+
+      console.error("Could not start conversation", err);
 
       setMessages([
         {
@@ -103,8 +101,9 @@ export default function Chat({ onClose }) {
         }
       ]);
     } finally {
-      startingNewChatRef.current = false;
-      setStartingNewChat(false);
+      if (conversationVersionRef.current === currentVersion) {
+        setStartingNewChat(false);
+      }
     }
   };
 
@@ -114,7 +113,7 @@ export default function Chat({ onClose }) {
     if (
       !message ||
       sendingRef.current ||
-      startingNewChatRef.current
+      startingNewChat
     ) {
       return;
     }
@@ -240,7 +239,6 @@ export default function Chat({ onClose }) {
           <button
             type="button"
             onClick={handleNewConversation}
-            disabled={startingNewChat}
             className="
               rounded-full border border-[#ded8d1]
               px-4 py-2 text-xs font-semibold

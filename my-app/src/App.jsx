@@ -93,7 +93,7 @@ function App() {
     if (import.meta.env.DEV) return;
 
     wakeUpIvy().catch((error) => {
-      console.debug("Ivy is temporarily unavailable:", error.message);
+      console.error("Ivy could not wake up:", error);
     });
   }, []);
 

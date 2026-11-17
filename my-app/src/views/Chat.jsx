@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import {
   sendChatMessage,
   getConversation,
-  startConversation
+  startConversation,
+  wakeUpIvy,
 } from "../api/chat";
 
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
@@ -16,6 +17,9 @@ export default function Chat({ onClose }) {
   const [thinking, setThinking] = useState(false);
   const [loading, setLoading] = useState(true);
   const [startingNewChat, setStartingNewChat] = useState(false);
+  const [ivyReady, setIvyReady] = useState(false);
+  const [ivyError, setIvyError] = useState(false);
+  const [retryIvy, setRetryIvy] = useState(0);
 
   const bottomRef = useRef(null);
 
@@ -68,6 +72,34 @@ export default function Chat({ onClose }) {
     });
   }, [messages, thinking]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    const checkIvy = async () => {
+      setIvyReady(false);
+      setIvyError(false);
+
+      try {
+        await wakeUpIvy();
+
+        if (!cancelled) {
+          setIvyReady(true);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error("Ivy wake-up failed:", error);
+          setIvyError(true);
+        }
+      }
+    };
+
+    checkIvy();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [retryIvy]);
+
   const handleNewConversation = async () => {
     conversationVersionRef.current += 1;
     const currentVersion = conversationVersionRef.current;
@@ -112,6 +144,7 @@ export default function Chat({ onClose }) {
 
     if (
       !message ||
+      !ivyReady ||
       sendingRef.current ||
       startingNewChat
     ) {
@@ -277,7 +310,8 @@ export default function Chat({ onClose }) {
       <div className="flex-1 space-y-4 overflow-y-auto bg-[#faf8f5] px-4 py-5">
         {messages.length === 0 &&
           !thinking &&
-          !startingNewChat && (
+          !startingNewChat &&
+          ivyReady && (
             <div className="flex h-full items-center justify-center">
               <div className="max-w-[280px] text-center">
                 <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#efe9df]">
@@ -306,6 +340,31 @@ export default function Chat({ onClose }) {
             <p className="text-sm text-[#8b8580]">
               Starting a new conversation...
             </p>
+          </div>
+        )}
+        {!ivyReady && !ivyError && !startingNewChat && (
+          <div className="flex items-center justify-center gap-3 rounded-xl bg-[#efe9df] px-4 py-3">
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#d8d1c8] border-t-[#b5202d]" />
+
+            <p className="text-sm text-[#77716b]">
+              Ivy is waking up. Just a moment...
+            </p>
+          </div>
+        )}
+
+        {ivyError && (
+          <div className="rounded-xl bg-[#efe9df] p-4 text-center">
+            <p className="mb-3 text-sm text-[#77716b]">
+              Ivy couldn't connect. Please try again.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => setRetryIvy((prev) => prev + 1)}
+              className="rounded-full bg-[#b5202d] px-4 py-2 text-xs font-semibold text-white hover:cursor-pointer"
+            >
+              Retry
+            </button>
           </div>
         )}
 
@@ -407,6 +466,7 @@ export default function Chat({ onClose }) {
             onClick={sendMessage}
             disabled={
               thinking ||
+              !ivyReady ||
               startingNewChat ||
               !input.trim()
             }

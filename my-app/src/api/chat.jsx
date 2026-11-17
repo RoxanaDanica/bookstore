@@ -13,9 +13,32 @@ export const getConversation = () => {
 };
 
 export const wakeUpIvy = async () => {
-  const response = await getAxiosInstance().get("/chat/health", {
-    timeout: 90000,
-  });
+  const maxAttempts = 5;
 
-  return response.data;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const response = await getAxiosInstance().get("/chat/health", {
+        timeout: 90000,
+      });
+
+      if (response.data?.status === "ok") {
+        return response.data;
+      }
+
+      throw new Error("Ivy is not ready yet");
+    } catch (error) {
+      console.warn(
+        `Ivy wake-up attempt ${attempt}/${maxAttempts} failed`,
+        error
+      );
+
+      if (attempt === maxAttempts) {
+        throw error;
+      }
+
+      await new Promise((resolve) =>
+        setTimeout(resolve, 5000)
+      );
+    }
+  }
 };

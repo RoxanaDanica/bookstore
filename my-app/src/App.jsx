@@ -92,8 +92,15 @@ function App() {
   useEffect(() => {
     if (import.meta.env.DEV) return;
 
+    fetch("https://ivy-ai-assistant.onrender.com/health", {
+      mode: "no-cors",
+      cache: "no-store",
+    }).catch((error) => {
+      console.warn("Could not reach Ivy directly:", error);
+    });
+
     wakeUpIvy().catch((error) => {
-      console.error("Ivy could not wake up:", error);
+      console.warn("Ivy could not wake up:", error);
     });
   }, []);
 

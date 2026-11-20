@@ -1,22 +1,83 @@
-from services.model_provider import get_chat_model
+
+import logging
+
+from groq import (
+    RateLimitError,
+    APIConnectionError,
+    APITimeoutError,
+    InternalServerError,
+)
 from langchain.agents import create_agent
+from langchain.agents.middleware import wrap_model_call
+
+from services.model_provider import get_chat_models
 from services.get_book_info import get_book_info
 from services.submit_book_review import give_review
 from services.check_book_stock import check_stock
 from services.add_book_to_cart import add_book_to_cart
 
 
-model = get_chat_model()
+logger = logging.getLogger(__name__)
+
+models = get_chat_models()
+
+if not models:
+    raise ValueError("No AI models configured")
+
+primary_model = models[0]
+
+RETRYABLE_ERRORS = (
+    RateLimitError,
+    APIConnectionError,
+    APITimeoutError,
+    InternalServerError,
+)
+
+
+@wrap_model_call
+def model_fallback(request, handler):
+    last_error = None
+
+    for index, candidate in enumerate(models):
+        try:
+            response = handler(
+                request.override(model=candidate)
+            )
+
+            if index > 0:
+                logger.info(
+                    "AI fallback succeeded with model %s",
+                    getattr(candidate, "model_name", "unknown"),
+                )
+
+            return response
+
+        except RETRYABLE_ERRORS as error:
+            last_error = error
+
+            logger.warning(
+                "AI model %s/%s failed (%s): %s",
+                index + 1,
+                len(models),
+                type(error).__name__,
+                getattr(candidate, "model_name", "unknown"),
+            )
+
+    if last_error is not None:
+        raise last_error
+
+    raise RuntimeError("No AI model could process the request")
 
 
 agent = create_agent(
-    model=model,
+    model=primary_model,
     tools=[
         get_book_info,
         give_review,
         check_stock,
         add_book_to_cart,
     ],
+    middleware=[model_fallback],
     system_prompt="""
     You are a friendly bookstore assistant.
 
@@ -49,6 +110,5 @@ agent = create_agent(
     Use previous conversation context.
     If the user asks a follow-up question like "price", "stock", or "reviews",
     use the most recently mentioned book unless specified otherwise.
-    """
-
+    """,
 )

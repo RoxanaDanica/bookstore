@@ -1,10 +1,11 @@
+
 import json
 import logging
 
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
-
+from groq import RateLimitError
 from langchain_core.messages import ToolMessage
 
 from agent import agent
@@ -19,6 +20,12 @@ FALLBACK_MESSAGE = (
     "I'm temporarily unavailable. "
     "Please try again later. "
     "Thank you for your patience!"
+)
+
+RATE_LIMIT_MESSAGE = (
+    "I'm temporarily unable to process your request due to high demand. "
+    "Please try again in about a minute. "
+    "Thank you for your patience."
 )
 
 
@@ -86,8 +93,20 @@ def chat_endpoint(req: ChatRequest):
             "actions": actions
         }
 
+    except RateLimitError:
+        logger.warning(
+            "Ivy reached the Groq rate limit"
+        )
+
+        return {
+            "response": RATE_LIMIT_MESSAGE,
+            "actions": []
+        }
+
     except Exception:
-        logger.exception("Ivy failed to process the chat request")
+        logger.exception(
+            "Ivy failed to process the chat request"
+        )
 
         return {
             "response": FALLBACK_MESSAGE,

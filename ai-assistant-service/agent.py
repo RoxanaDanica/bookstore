@@ -1,5 +1,8 @@
 
 import logging
+import time
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 
 from groq import (
     RateLimitError,
@@ -26,12 +29,39 @@ if not models:
 
 primary_model = models[0]
 
-RETRYABLE_ERRORS = (
-    RateLimitError,
-    APIConnectionError,
-    APITimeoutError,
-    InternalServerError,
-)
+MAX_RETRIES = 1
+MAX_RETRY_WAIT = 5
+
+
+def get_retry_delay(error):
+    """Get the retry delay from the provider response."""
+    response = getattr(error, "response", None)
+
+    if response is not None:
+        retry_after = response.headers.get("retry-after")
+
+        if retry_after:
+            try:
+                return max(0, float(retry_after))
+            except ValueError:
+                try:
+                    retry_date = parsedate_to_datetime(retry_after)
+
+                    if retry_date.tzinfo is None:
+                        retry_date = retry_date.replace(
+                            tzinfo=timezone.utc
+                        )
+
+                    return max(
+                        0,
+                        (
+                            retry_date - datetime.now(timezone.utc)
+                        ).total_seconds(),
+                    )
+                except (TypeError, ValueError, OverflowError):
+                    pass
+
+    return 2
 
 
 @wrap_model_call
@@ -39,29 +69,77 @@ def model_fallback(request, handler):
     last_error = None
 
     for index, candidate in enumerate(models):
-        try:
-            response = handler(
-                request.override(model=candidate)
-            )
+        model_name = getattr(
+            candidate,
+            "model_name",
+            "unknown",
+        )
 
-            if index > 0:
-                logger.info(
-                    "AI fallback succeeded with model %s",
-                    getattr(candidate, "model_name", "unknown"),
+        for attempt in range(MAX_RETRIES + 1):
+            try:
+                response = handler(
+                    request.override(model=candidate)
                 )
 
-            return response
+                if index > 0:
+                    logger.info(
+                        "AI fallback succeeded with model %s",
+                        model_name,
+                    )
 
-        except RETRYABLE_ERRORS as error:
-            last_error = error
+                return response
 
-            logger.warning(
-                "AI model %s/%s failed (%s): %s",
-                index + 1,
-                len(models),
-                type(error).__name__,
-                getattr(candidate, "model_name", "unknown"),
-            )
+            except RateLimitError as error:
+                last_error = error
+
+                logger.warning(
+                    "AI model %s/%s rate limited: "
+                    "%s (attempt %s/%s)",
+                    index + 1,
+                    len(models),
+                    model_name,
+                    attempt + 1,
+                    MAX_RETRIES + 1,
+                )
+
+                if attempt >= MAX_RETRIES:
+                    break
+
+                delay = get_retry_delay(error)
+
+                if delay > MAX_RETRY_WAIT:
+                    logger.info(
+                        "Retry delay %.2fs exceeds limit "
+                        "for model %s; trying next model",
+                        delay,
+                        model_name,
+                    )
+                    break
+
+                logger.info(
+                    "Retrying model %s in %.2fs",
+                    model_name,
+                    delay,
+                )
+
+                time.sleep(delay)
+
+            except (
+                APIConnectionError,
+                APITimeoutError,
+                InternalServerError,
+            ) as error:
+                last_error = error
+
+                logger.warning(
+                    "AI model %s/%s failed (%s): %s",
+                    index + 1,
+                    len(models),
+                    type(error).__name__,
+                    model_name,
+                )
+
+                break
 
     if last_error is not None:
         raise last_error
